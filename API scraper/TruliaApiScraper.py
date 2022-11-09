@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import datetime
 from collections import OrderedDict
 import itertools
+import time
 
 requests.packages.urllib3.disable_warnings()
 pd.set_option('display.max_columns', None)
@@ -71,39 +72,41 @@ def initializeRequest():
         }
     scrapeMoreFeatures = False  ### creates lag
     changeQueryParameters = False  #### set this true to change parameters
+    
+    keywordsToExclude = []
+    keywordsToInclude = []
+    
     if changeQueryParameters:
-        editQueryList = editQuery(payloadDict)
-        payloadDict = editQueryList[0]
-        keywordsToExclude = editQueryList[1] if scrapeMoreFeatures else []
-        keywordsToInclude = editQueryList[2] if scrapeMoreFeatures else []
-    else:
-        keywordsToExclude = []
-        keywordsToInclude = []
+        payloadDict, keywordsToExclude, keywordsToInclude = editQuery(payloadDict, scapeMoreFeatures)
+        
     searchType = payloadDict['variables']['searchDetails']['searchType']
 
     return [url, payloadDict, headers, scrapeMoreFeatures, searchType, keywordsToExclude, keywordsToInclude]
 
 
-def editQuery(payloadDict):
+def editQuery(payloadDict: dict, scrapeMoreFeatures: bool = False) -> list:
     searchDetails = payloadDict['variables']['searchDetails']
-    searchDetails['searchType'], searchDetails['filters']['sort']['type'], searchDetails['filters'][
-        'soldWithin'] = "SOLD", "LAST_SALE_DATE", 9
+    searchDetails['searchType'] = "SOLD"
+
     searchDetails['location'].pop('cities', None)
     searchDetails['location'].pop('zips', None)
     searchDetails['location']['cities'] = [{"city": "Philadelphia", "state": "PA"}]
+    # searchDetails['location']['zips'] = ["19142"]
+
+    searchDetails['filters']['sort']['type'] = "LAST_SALE_DATE"
+    searchDetails['filters']['soldWithin'] = 9
     searchDetails['filters']['price'] = {'min': "*", "max": "*"}
     searchDetails['filters']['bedrooms'] = {'min': "4", "max": "*"}
     searchDetails['filters']['bathrooms'] = {'min': "2", "max": "*"}
-    # searchDetails['location']['zips'] = ["19142"]
     searchDetails['filters']['limit'] = 25
     searchDetails['filters']['propertyTypes'] = ["MULTI_FAMILY"]
-    keywordsToExclude = [x.lower() for x in []]
-    keywordsToInclude = [x.lower() for x in []]
+    keywordsToExclude = [x.lower() for x in []] if scrapeMoreFeatures else []
+    keywordsToInclude = [x.lower() for x in []] if scrapeMoreFeatures else []
     return [payloadDict, keywordsToExclude, keywordsToInclude]
 
 
-def callMoreFeatures(home, url, headers):
-    for attempt in range(0, 5):
+def callMoreFeatures(home, url, session):
+    for attempt in range(0, 5):        
         featuresPayloadDict = {
             "operationName": "WEB_homeDetailsClientTopThirdLookUp",
             "variables": {
@@ -126,12 +129,18 @@ def callMoreFeatures(home, url, headers):
             },
             "query": "query WEB_homeDetailsClientTopThirdLookUp($url: String!) {\n  homeDetailsByUrl(url: $url) {\n    url\n    ...HomeDetailsDescriptionFragment\n    ...HomeDetailsListingProviderFragment\n    ...HomeDetailsFeaturesFragment\n    ...HomeDetailsPriceHistoryFragment\n  }\n}\n\nfragment HomeDetailsDescriptionFragment on HOME_Details {\n        __typename\n        description {\n          value\n          formattedDateLastUpdated(dateFormat:\"MMMM DD, YYYY\")\n          contactPhoneNumber\n          additionalInfoHyperlink {\n            title\n            url\n          }\n          subheader\n        }\n      }\n\nfragment HomeDetailsFeaturesFragment on HOME_Details {\n        features {\n          title\n          categories {\n            formattedName\n            ... on HOME_FeatureCategoryGroup {\n              formattedName\n              attributes {\n                ...HomeDetailsFeatureAttributesFragment\n              }\n              additionalNotes {\n                ...HomeDetailsFeatureAttributesFragment\n              }\n              categories {\n                ... on HOME_FeatureSubCategory {\n                  formattedName\n                  formattedSubtitle\n                  attributes {\n                    ...HomeDetailsFeatureAttributesFragment\n                  }\n                  additionalNotes {\n                    ...HomeDetailsFeatureAttributesFragment\n                  }\n                }\n              }\n            }\n            ... on HOME_FeatureSubCategory {\n              formattedName\n              formattedSubtitle\n              attributes {\n                ...HomeDetailsFeatureAttributesFragment\n              }\n              additionalNotes {\n                ...HomeDetailsFeatureAttributesFragment\n              }\n            }\n          }\n        }\n      }\n\nfragment HomeDetailsFeatureAttributesFragment on HOME_FeatureAttributeValue {\n    ... on HOME_FeatureAttributeGenericNameValue {\n      formattedName\n    }\n    ... on HOME_FeatureAttributeLink {\n      formattedName\n      linkURL\n    }\n    formattedValue\n  }\n\n\n\nfragment HomeDetailsListingProviderFragment on HOME_Details {\n        ...on HOME_Property {\n          lastSold {\n            provider {\n              disclaimer {\n                name\n                value\n              }\n            }\n          }\n          activeListing {\n            provider {\n              lastModified\n            }\n          }\n        }\n\n      }\n\nfragment HomeDetailsPriceHistoryFragment on HOME_Property {\n  titleToPriceHistory\n  priceHistory {\n    __typename\n    formattedDate(dateFormat:\"MM/DD/YYYY\")\n    event\n    source\n    mlsLogo\n    ... on HOME_PriceHistoryStandardEvent {\n      price {\n        formattedPrice\n        formattedPriceAbb: formattedPrice(formatType: SHORT_ABBREVIATION)\n      }\n      attributionSource\n    }\n    ... on HOME_PriceHistoryChangeEvent {\n      price {\n        formattedPrice\n        formattedPriceAbb: formattedPrice(formatType: SHORT_ABBREVIATION)\n      }\n      priceChange {\n        priceChangeValue {\n          formattedPrice\n        }\n        priceChangePercent\n        formattedPriceChangePercent\n        priceChangeDirection\n      }\n    }\n    attributes {\n      key\n      formattedAttribute\n    }\n  }\n}"
         }
-        featuresPayload = json.dumps(featuresPayloadDict)
-        featuresResponse = json.loads(
-            requests.request("POST", url, headers=headers, data=featuresPayload, verify=False).text)
+
+        response = session.post(url, json=featuresPayloadDict)
+        response.raise_for_status()
+
+        featuresResponse = response.json()
+
         if featuresResponse['data']['homeDetailsByUrl'] is not None:
             break
         print('Attempt to scrape failed, trying again')
+        # sleep 1 sec before try again
+        time.sleep(1) 
+        
     featuresResponse = featuresResponse['data']['homeDetailsByUrl']
     featuresCategories = featuresResponse['features']['categories']
     df = pd.DataFrame(featuresCategories)
@@ -139,12 +148,12 @@ def callMoreFeatures(home, url, headers):
     try:
         description = featuresResponse['description']['value']
     except Exception as e:
-        print('Description could not be scraped. Error has occurred: {error}'.format(error=e))
+        print(f"Description could not be scraped. Error has occurred: {e}")
         description = None
     return description, featuresDict
 
 
-def getFeatures(df):
+def getFeatures(df: pd.DataFrame):
     featuresDict = OrderedDict()
     if not df[df.formattedName == 'Exterior Features'].empty:
         dfExternalFeatures = searchInDataFrame(df, 'Exterior Features', 'categories')
@@ -160,8 +169,7 @@ def getFeatures(df):
         dfInternalDetailsFeatures = searchInDataFrame(dfInternalFeatures, 'Interior Details', 'attributes')
         featuresDict['basement'] = searchInDataFrame(dfInternalDetailsFeatures, 'Basement', 'formattedValue')
         dfSquareFootage = searchInDataFrame(dfInternalFeatures, 'Dimensions and Layout', 'attributes')
-        featuresDict['floor_sqft'] = searchInDataFrame(dfSquareFootage, 'Living Area',
-                                                       'formattedValue')
+        featuresDict['floor_sqft'] = searchInDataFrame(dfSquareFootage, 'Living Area', 'formattedValue')
         if featuresDict['floor_sqft'] is not None:
             featuresDict['floor_sqft'] = featuresDict['floor_sqft'].lower().replace('square feet', 'sqft')
     else:
@@ -181,8 +189,7 @@ def getFeatures(df):
         featuresDict['structure_type'] = searchInDataFrame(dfPropertyTypeFeatures, 'Structure Type', 'formattedValue')
         featuresDict['architecture'] = searchInDataFrame(dfPropertyTypeFeatures, 'Architecture', 'formattedValue')
         dfBuildingFeatures = searchInDataFrame(dfPropertyFeatures, 'Building', 'attributes')
-        featuresDict['house_material'] = searchInDataFrame(dfBuildingFeatures, 'Construction Materials',
-                                                           'formattedValue')
+        featuresDict['house_material'] = searchInDataFrame(dfBuildingFeatures, 'Construction Materials', 'formattedValue')
         dfPropertyInformationFeatures = searchInDataFrame(dfPropertyFeatures, 'Property Information', 'attributes')
         featuresDict['condition'] = searchInDataFrame(dfPropertyInformationFeatures, 'Condition', 'formattedValue')
     else:
@@ -196,12 +203,11 @@ def getFeatures(df):
         featuresDict['condition'] = None
     if not df[df.formattedName == 'Lot Information'].empty:
         dfLotFeatures = searchInDataFrame(df, 'Lot Information', 'attributes')
-        featuresDict['lot_size'] = searchInDataFrame(dfLotFeatures, 'Lot Area', 'formattedValue').lower().replace(
-            'square feet', 'sqft')
+        featuresDict['lot_size'] = searchInDataFrame(dfLotFeatures, 'Lot Area', 'formattedValue').lower().replace('square feet', 'sqft')
     return featuresDict
 
 
-def searchInDataFrame(df, searchedName, columnName):
+def searchInDataFrame(df: pd.DataFrame, searchedName: str, columnName: str):
     try:
         return pd.DataFrame(getattr(df[df.formattedName == str(searchedName)], columnName).reset_index(drop=True)[0])
     except Exception as e:
@@ -211,7 +217,7 @@ def searchInDataFrame(df, searchedName, columnName):
             return None
 
 
-def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keywordsToExclude, keywordsToInclude):
+def appendHomeToList(home: dict, url: str, session: requests.Session, scrapeMoreFeatures: bool, searchType: str, keywordsToExclude: list, keywordsToInclude: list) -> dict:
     attributesToDelete = ['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
                           'preferences', 'providerListingId']
     for attribute in attributesToDelete:
@@ -235,13 +241,15 @@ def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keyword
         else:
             print('House was not added due to non-specific asking price')
         return None
+
+    address = homeDict['address']
+
     if scrapeMoreFeatures:
         description, featuresDict = callMoreFeatures(home, url, headers)
         descriptionKeywordsList = []
         for (keywordToExclude, keywordToInclude) in itertools.zip_longest(keywordsToExclude, keywordsToInclude, fillvalue='No keywords left'):
             if keywordToExclude in description:
-                print('Keyword {kw} found in description for {house}. Excluded in scrape.'.format(kw=keywordToExclude,
-                                                                                                  house=homeDict['address']))
+                print(f"Keyword {keywordToExclude} found in description for {address}. Excluded in scrape.")
                 return None
             elif keywordToInclude in description:
                 descriptionKeywordsList.append(keywordToInclude)
@@ -275,11 +283,9 @@ def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keyword
             if searchType == "FOR_SALE":
                 homeDict['date_listed_or_sold'] = home['activeListing']['dateListed'].split("T")[0]
             elif searchType == "SOLD":
-                homeDict['date_listed_or_sold'] = datetime.strptime(home['fullTags'][1]['formattedName'],
-                                                                 '%b %d, %Y').strftime('%Y-%m-%d')
+                homeDict['date_listed_or_sold'] = datetime.strptime(home['fullTags'][1]['formattedName'],'%b %d, %Y').strftime('%Y-%m-%d')
         except Exception as e:
-            print('An error has occurred:{e}. Date listed/sold was unable to be scraped for {house}'.format(
-                e=e, house=homeDict['address']))
+            print(f"An error has occurred:{e}. Date listed/sold was unable to be scraped for {address}")
             homeDict['date_listed_or_sold'] = None
         df = pd.DataFrame(home['tracking'])
         homeDict['neighborhood'] = next(iter(df.loc[df.key == 'listingNeighborhood']['value'].to_numpy()), None)
@@ -299,9 +305,7 @@ def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keyword
         else:
             homeDict['listing_status'] = 'Unknown'
     except Exception as e:
-        print('An error has occurred: {error}. {address} was unable to be scraped.'.format(error=e,
-                                                                                           address=homeDict[
-                                                                                               'address']))
+        print(f"An error has occurred: {e}. {address} was unable to be scraped.")
         return None
     homeDict.update(featuresDict)
     if scrapeMoreFeatures:
@@ -315,7 +319,7 @@ def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keyword
                         'bedrooms', 'bathrooms', 'neighborhood', 'property_type', 'parking', 'year_built',
                         'listing_status', 'date_listed_or_sold', 'trulia_url', 'trulia_listing_id', 'description_keywords','description']
     homeDict = OrderedDict((key, homeDict[key]) for key in correctOrder)
-    print('{house} successfully scraped'.format(house=homeDict['address']))
+    print(f"{address} successfully scraped")
     return homeDict
 
 
@@ -328,18 +332,21 @@ def scrapeTrulia():
     searchType = loadedQueriesList[4]
     keywordsToExclude = loadedQueriesList[5]
     keywordsToInclude = loadedQueriesList[6]
-    response = requests.request("POST", url, headers=headers, data=json.dumps(payload), verify=False)
 
-    jsonString = response.text
-    homesDumpJson = json.loads(jsonString)
-    listOfHomesRaw = homesDumpJson['data']['searchResultMap']['homes']  ### index = house index
+    session = requests.Session()
+    session.headers = headers
+    session.verify = False
+    response = session.post(url, json=payload)
+    response.raise_for_status()
+
+    listOfHomesRaw = response.json()['data']['searchResultMap']['homes']  ### index = house index
+    
     listOfScrapedHomes = []
     for home in listOfHomesRaw:
-        homeDict = appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keywordsToExclude,
-                                    keywordsToInclude)
+        homeDict = appendHomeToList(home, url, session, scrapeMoreFeatures, searchType, keywordsToExclude, keywordsToInclude)
         if homeDict is not None:
             listOfScrapedHomes.append(homeDict)
-    print("{num} listings scraped".format(num=len(listOfScrapedHomes)))
+    print(f"{len(listOfScrapedHomes)} listings scraped")
     return listOfScrapedHomes
 
 
