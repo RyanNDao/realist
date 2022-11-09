@@ -1,5 +1,4 @@
 import requests
-import json
 import re
 import pandas as pd
 from datetime import datetime
@@ -105,7 +104,7 @@ def editQuery(payloadDict: dict, scrapeMoreFeatures: bool = False) -> list:
     return [payloadDict, keywordsToExclude, keywordsToInclude]
 
 
-def callMoreFeatures(home, url, session):
+def callMoreFeatures(home: dict, url: str, session: requests.Session) -> (str, OrderedDict):
     for attempt in range(0, 5):        
         featuresPayloadDict = {
             "operationName": "WEB_homeDetailsClientTopThirdLookUp",
@@ -153,7 +152,7 @@ def callMoreFeatures(home, url, session):
     return description, featuresDict
 
 
-def getFeatures(df: pd.DataFrame):
+def getFeatures(df: pd.DataFrame) -> dict:
     featuresDict = OrderedDict()
     if not df[df.formattedName == 'Exterior Features'].empty:
         dfExternalFeatures = searchInDataFrame(df, 'Exterior Features', 'categories')
@@ -324,15 +323,8 @@ def appendHomeToList(home: dict, url: str, session: requests.Session, scrapeMore
 
 
 def scrapeTrulia():
-    loadedQueriesList = initializeRequest()
-    url = loadedQueriesList[0]
-    payload = loadedQueriesList[1]
-    headers = loadedQueriesList[2]
-    scrapeMoreFeatures = loadedQueriesList[3]
-    searchType = loadedQueriesList[4]
-    keywordsToExclude = loadedQueriesList[5]
-    keywordsToInclude = loadedQueriesList[6]
-
+    url, payload, headers, scrapeMoreFeatures, searchType, keywordsToExclude, keywordsToInclude = initializeRequest()
+    
     session = requests.Session()
     session.headers = headers
     session.verify = False
