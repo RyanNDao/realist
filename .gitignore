@@ -9,3 +9,5 @@ API scraper/trulia_data.xlsx
 API scraper/.DS_Store
 
 .idea
+
+venv
