@@ -67,10 +67,11 @@ def initializeRequest():
     headers = \
         {
             'Content-Type': 'application/json',
-            'Cookie': '_pxhd=FEdz2RO1thvNb7wYieHUICcOHmLIrHdBzPMgjET02a/oBqPp3ZR0FrooSi9gTj9jQMb9QKg8BmV7S/3fUlx8AA==:gfN5DVGjUBwpQj0qwRvxon44QUFFscfum2lX0pL3zuP9JMo8pqq3nynzu9MxsR6zFHdddUkvAi/4pxc8VTibxkC11SN-p3Xk6owTF/2nYCs='
+            'Cookie': '_pxhd=FEdz2RO1thvNb7wYieHUICcOHmLIrHdBzPMgjET02a/oBqPp3ZR0FrooSi9gTj9jQMb9QKg8BmV7S/3fUlx8AA==:gfN5DVGjUBwpQj0qwRvxon44QUFFscfum2lX0pL3zuP9JMo8pqq3nynzu9MxsR6zFHdddUkvAi/4pxc8VTibxkC11SN-p3Xk6owTF/2nYCs=',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
         }
-    scrapeMoreFeatures = False  ### creates lag
-    changeQueryParameters = False  #### set this true to change parameters
+    scrapeMoreFeatures = True  ### creates lag
+    changeQueryParameters = True  #### set this true to change parameters
     if changeQueryParameters:
         editQueryList = editQuery(payloadDict)
         payloadDict = editQueryList[0]
@@ -91,13 +92,13 @@ def editQuery(payloadDict):
     searchDetails['location'].pop('cities', None)
     searchDetails['location'].pop('zips', None)
     searchDetails['location']['cities'] = [{"city": "Philadelphia", "state": "PA"}]
-    searchDetails['filters']['price'] = {'min': "*", "max": "*"}
+    searchDetails['filters']['price'] = {'min': "475000", "max": "1050000"}
     searchDetails['filters']['bedrooms'] = {'min': "4", "max": "*"}
-    searchDetails['filters']['bathrooms'] = {'min': "2", "max": "*"}
+    searchDetails['filters']['bathrooms'] = {'min': "4", "max": "*"}
     # searchDetails['location']['zips'] = ["19142"]
-    searchDetails['filters']['limit'] = 25
+    searchDetails['filters']['limit'] = 300
     searchDetails['filters']['propertyTypes'] = ["MULTI_FAMILY"]
-    keywordsToExclude = [x.lower() for x in []]
+    keywordsToExclude = [x.lower() for x in ["duplex","triplex"]]
     keywordsToInclude = [x.lower() for x in []]
     return [payloadDict, keywordsToExclude, keywordsToInclude]
 
@@ -196,8 +197,11 @@ def getFeatures(df):
         featuresDict['condition'] = None
     if not df[df.formattedName == 'Lot Information'].empty:
         dfLotFeatures = searchInDataFrame(df, 'Lot Information', 'attributes')
-        featuresDict['lot_size'] = searchInDataFrame(dfLotFeatures, 'Lot Area', 'formattedValue').lower().replace(
-            'square feet', 'sqft')
+        try:
+            featuresDict['lot_size'] = searchInDataFrame(dfLotFeatures, 'Lot Area', 'formattedValue').lower().replace(
+                'square feet', 'sqft')
+        except AttributeError:
+            featuresDict['lot_size'] = None
     return featuresDict
 
 
@@ -239,11 +243,11 @@ def appendHomeToList(home, url, headers, scrapeMoreFeatures, searchType, keyword
         description, featuresDict = callMoreFeatures(home, url, headers)
         descriptionKeywordsList = []
         for (keywordToExclude, keywordToInclude) in itertools.zip_longest(keywordsToExclude, keywordsToInclude, fillvalue='No keywords left'):
-            if keywordToExclude in description:
+            if keywordToExclude in description.lower():
                 print('Keyword {kw} found in description for {house}. Excluded in scrape.'.format(kw=keywordToExclude,
                                                                                                   house=homeDict['address']))
                 return None
-            elif keywordToInclude in description:
+            elif keywordToInclude in description.lower():
                 descriptionKeywordsList.append(keywordToInclude)
         homeDict['description'] = description
         if len(keywordsToInclude) == 0:

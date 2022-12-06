@@ -1,11 +1,11 @@
 API scraper/__pycache__
 
-API scraper/trulia_data.json
+*.json
+*.xlsx
+*.csv
 
-API scraper/trulia_data.xlsx
-
-.DS_Store
-
+.DS_Stor
 API scraper/.DS_Store
 
 .idea
+/venv
