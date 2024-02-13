@@ -1,11 +1,13 @@
-API scraper/__pycache__
+**/__pycache__
 
 *.json
 *.xlsx
 *.csv
 
-.DS_Stor
-API scraper/.DS_Store
-
+**/.DS_Store
 .idea
-/venv
+/.venv
+
+**/.env
+
+!/tests/data/*.json

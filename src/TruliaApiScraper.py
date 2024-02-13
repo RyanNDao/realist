@@ -12,6 +12,7 @@ pd.set_option('display.max_columns', None)
 
 def initializeRequest():
     url=''
+
     if not url:
         url = input('Type url:\n')
     #### json dict here ####
@@ -65,12 +66,12 @@ def initializeRequest():
     #### json dict here ####
 
     headers = \
-        {
-            'Content-Type': 'application/json',
-            'Cookie': '_pxhd=FEdz2RO1thvNb7wYieHUICcOHmLIrHdBzPMgjET02a/oBqPp3ZR0FrooSi9gTj9jQMb9QKg8BmV7S/3fUlx8AA==:gfN5DVGjUBwpQj0qwRvxon44QUFFscfum2lX0pL3zuP9JMo8pqq3nynzu9MxsR6zFHdddUkvAi/4pxc8VTibxkC11SN-p3Xk6owTF/2nYCs=',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-        }
-    scrapeMoreFeatures = True  ### creates lag
+    {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+
+    scrapeMoreFeatures = False  ### creates lag
     changeQueryParameters = True  #### set this true to change parameters
     if changeQueryParameters:
         editQueryList = editQuery(payloadDict)
@@ -333,8 +334,9 @@ def scrapeTrulia():
     keywordsToExclude = loadedQueriesList[5]
     keywordsToInclude = loadedQueriesList[6]
     response = requests.request("POST", url, headers=headers, data=json.dumps(payload), verify=False)
-
+    
     jsonString = response.text
+    print(jsonString)
     homesDumpJson = json.loads(jsonString)
     listOfHomesRaw = homesDumpJson['data']['searchResultMap']['homes']  ### index = house index
     listOfScrapedHomes = []
@@ -349,4 +351,3 @@ def scrapeTrulia():
 
 if __name__ == "__main__":
     scrapeTrulia()
-
