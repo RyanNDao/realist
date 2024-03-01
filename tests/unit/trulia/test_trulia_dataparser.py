@@ -1,7 +1,10 @@
 from trulia.trulia_dataparser import HouseScan_DataParser, DetailedScrape_DataParser, DataParser
 import pytest
 from unittest.mock import Mock, patch
+import logging
+from collections import OrderedDict
 
+LOGGER = logging.getLogger(__name__)
 
 def test_trulia_house_scan_data_parser_default(caplog):
     houseScanDataParser = HouseScan_DataParser(
@@ -9,15 +12,15 @@ def test_trulia_house_scan_data_parser_default(caplog):
         pytest.JSON_DATA['expected_house_scan_default_payload']
     )
     assert 'Liberty Plaza View Plan in North Liberty Triangle was not added due to non-specific asking price' in caplog.text
-    assert len(houseScanDataParser.scrapedHomes) == 24
-    assert len(houseScanDataParser.urls) == 24
+    assert len(houseScanDataParser.scrapedHomes) == 2
+    assert len(houseScanDataParser.urls) == 2
     
 def test_trulia_house_scan_check_home_data():
     houseScanDataParser = HouseScan_DataParser(
         pytest.JSON_DATA['mocked_trulia_house_scan_response_default'],
         pytest.JSON_DATA['expected_house_scan_default_payload']
     )
-    homeData = houseScanDataParser.scrapedHomes[0]
+    homeData = [homeData for homeData in houseScanDataParser.scrapedHomes.values()][0]
     assert homeData['location']
     assert homeData['address']
     assert homeData['asking_price']
@@ -41,12 +44,30 @@ def test_trulia_house_scan_check_home_data():
 
 
 def test_trulia_detailed_scrape_default():
-    DetailedScrape_DataParser
-    
+    mockedHomeData = { url: OrderedDict() for url in pytest.JSON_DATA['mocked_trulia_urls_list'] }
+    detailedScrapeDataParser = DetailedScrape_DataParser(pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default'], mockedHomeData)
+    assert len(mockedHomeData) == len(detailedScrapeDataParser)
+    assert all([len(home)==17 for home in detailedScrapeDataParser.scrapedHomes.values()])
 
-
-
-
+@pytest.mark.parametrize("path, default, expected", [
+    (['subCategory'], None, [
+        {"type": "A", "value": "100", "details": {"size": "Large"}},
+        {"type": "B", "value": "200", "details": {"size": "Small"}}
+    ]),
+    (["subCategory", ("type", "B", "details")], None, {"size": "Small"}),
+    (["nonexistent"], "Missing key test case", "Missing key test case"),
+    (["category", "subCategory", ("type", "B", "wrongKey")], "Test for wrong key in tuple", "Test for wrong key in tuple"),
+    ([], "Empty", "Empty"),
+    (["subCategory", ("type", "A", "details"), "size"], None, "Large"),
+])
+def test_getFeature(path, default, expected):
+    mockData = {
+        "subCategory": [
+            {"type": "A", "value": "100", "details": {"size": "Large"}},
+            {"type": "B", "value": "200", "details": {"size": "Small"}}
+        ]
+    }
+    assert DataParser.getAttribute(mockData, path, default, parserFunction=DetailedScrape_DataParser.getFeature) == expected
 
 @pytest.mark.parametrize("path,default,expected", [
     (['abc', 'def'], None, 'hello'),
@@ -97,8 +118,8 @@ def test_getListingStatus_with_statuses(status_key, expected_status):
 
 @pytest.mark.parametrize("trackingList,key,default,expected", [
     ([{'key': 'testKey', 'value': 'testValue'}], 'testKey', None, 'testValue'),
-    ([{'key': 'anotherKey', 'value': 'anotherValue'}], 'testKey', 'defaultValue', 'defaultValue'),
-    ([{'key': 'testKey', 'value': 'firstValue'}, {'key': 'testKey', 'value': 'secondValue'}], 'testKey', 'multipleFound', 'multipleFound'),
+    ([{'key': 'this should not return', 'value': 'neither should this'}], 'thisKeyShouldNotBeFound', 'defaultValue', 'defaultValue'),
+    ([{'key': 'duplicateKey', 'value': 'firstValue'}, {'key': 'duplicateKey', 'value': 'secondValue'}], 'duplicateKey', 'multipleFound', 'multipleFound'),
 ])
 def test_parseTrackingList(trackingList, key, default, expected):
     assert DataParser.getAttribute(trackingList, key, default, parserFunction=HouseScan_DataParser.parseTrackingList) == expected
@@ -107,7 +128,7 @@ def test_parseTrackingList(trackingList, key, default, expected):
     ([{'key': 'item', 'value': 'keyword:expectedValue;'}], 'keyword', None, 'expectedValue'),
     ([{'key': 'item', 'value': 'substring:thistestssubstring;'}], 'string', None, None),
     ([{'key': 'item', 'value': 'anotherKeyword:anotherValue;'}], 'keyword', 'notFound', 'notFound'),
-    ([{'key': 'item', 'value': '|keyword:this_also_tests_symbols;'}, {'key': 'item', 'value': ':keyword:secondValue;'}], 'keyword', 'multipleFound', 'multipleFound'),
+    ([{'key': 'item', 'value': '|keyword:this_also_tests_symbols;'}, {'key': 'item', 'value': ':keyword:duplicateKey;'}], 'keyword', 'multipleFound', 'multipleFound'),
     ([{'key': 'item', 'value': 'no match'}], 'keyword', 'noMatch', 'noMatch'),
 ])
 def test_parseMiscItemsInTrackingList(trackingList, keyword, default, expected):

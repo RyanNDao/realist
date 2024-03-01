@@ -1,11 +1,12 @@
 **/__pycache__
+**/.pytest_cache
+**/.DS_Store
+**/.idea
 
 *.json
 *.xlsx
 *.csv
 
-**/.DS_Store
-.idea
 /.venv
 
 **/.env

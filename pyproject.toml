@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "realist"
 version = "0.1.0"
 description = "Project"
-authors = [{name = "Your Name", email = "your.email@example.com"}]
+authors = [{name = "Ryan", email = "your.email@example.com"}]
 dependencies = [
     "certifi==2023.11.17",
     "charset-normalizer==3.3.2",

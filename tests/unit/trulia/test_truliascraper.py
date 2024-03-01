@@ -47,15 +47,14 @@ def test_trulia_scraper_house_scan_make_request(mockResponse):
 def test_trulia_scraper_detailed_scrape_make_request(mockResponse):
     mockResponseReturn = Mock()
     mockResponseReturn.status_code = 200
-    mockResponseReturn.text = pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_simple']
+    mockResponseReturn.text = pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default']
     mockResponse.return_value = mockResponseReturn
-    scraper = TruliaScraper(PayloadGenerator_DetailedHouseScraper([
-        "/home/230-montrose-st-philadelphia-pa-19147-10177108",
-        "/home/200-head-house-ct-philadelphia-pa-19147-10182414"
-    ]))
+    scraper = TruliaScraper(PayloadGenerator_DetailedHouseScraper(
+        pytest.JSON_DATA['mocked_trulia_urls_list']
+    ))
     assert scraper.data == None
     scraper.makeRequest()
-    assert scraper.data == pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_simple']
+    assert scraper.data == pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default']
 
 ########   NEGATIVE TEST CASES   ########
 
