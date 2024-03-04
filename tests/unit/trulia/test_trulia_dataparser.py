@@ -1,4 +1,4 @@
-from trulia.trulia_dataparser import HouseScan_DataParser, DetailedScrape_DataParser, DataParser
+from trulia.trulia_dataparser import DataParser_HouseScan, DataParser_DetailedScrape, DataParser
 import pytest
 from unittest.mock import Mock, patch
 import logging
@@ -7,7 +7,7 @@ from collections import OrderedDict
 LOGGER = logging.getLogger(__name__)
 
 def test_trulia_house_scan_data_parser_default(caplog):
-    houseScanDataParser = HouseScan_DataParser(
+    houseScanDataParser = DataParser_HouseScan(
         pytest.JSON_DATA['mocked_trulia_house_scan_response_default'],
         pytest.JSON_DATA['expected_house_scan_default_payload']
     )
@@ -16,7 +16,7 @@ def test_trulia_house_scan_data_parser_default(caplog):
     assert len(houseScanDataParser.urls) == 2
     
 def test_trulia_house_scan_check_home_data():
-    houseScanDataParser = HouseScan_DataParser(
+    houseScanDataParser = DataParser_HouseScan(
         pytest.JSON_DATA['mocked_trulia_house_scan_response_default'],
         pytest.JSON_DATA['expected_house_scan_default_payload']
     )
@@ -45,7 +45,7 @@ def test_trulia_house_scan_check_home_data():
 
 def test_trulia_detailed_scrape_default():
     mockedHomeData = { url: OrderedDict() for url in pytest.JSON_DATA['mocked_trulia_urls_list'] }
-    detailedScrapeDataParser = DetailedScrape_DataParser(pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default'], mockedHomeData)
+    detailedScrapeDataParser = DataParser_DetailedScrape(pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default'], mockedHomeData)
     assert len(mockedHomeData) == len(detailedScrapeDataParser)
     assert all([len(home)==17 for home in detailedScrapeDataParser.scrapedHomes.values()])
 
@@ -67,7 +67,7 @@ def test_getFeature(path, default, expected):
             {"type": "B", "value": "200", "details": {"size": "Small"}}
         ]
     }
-    assert DataParser.getAttribute(mockData, path, default, parserFunction=DetailedScrape_DataParser.getFeature) == expected
+    assert DataParser.getAttribute(mockData, path, default, parserFunction=DataParser_DetailedScrape.getFeature) == expected
 
 @pytest.mark.parametrize("path,default,expected", [
     (['abc', 'def'], None, 'hello'),
@@ -102,7 +102,7 @@ def test_getAttribute_error_handling(caplog):
 
 def test_getListingStatus_custom_default():
     mockObj = {'currentStatus': {}}
-    assert DataParser.getAttribute(mockObj, None, default='test', parserFunction=HouseScan_DataParser.getListingStatus) == 'test'
+    assert DataParser.getAttribute(mockObj, None, default='test', parserFunction=DataParser_HouseScan.getListingStatus) == 'test'
 
 @pytest.mark.parametrize("status_key, expected_status", [
     ('isRecentlySold', 'Sold'),
@@ -114,7 +114,7 @@ def test_getListingStatus_custom_default():
 ])
 def test_getListingStatus_with_statuses(status_key, expected_status):
     mockObj = {'currentStatus': {status_key: True, 'hello': False}}
-    assert DataParser.getAttribute(mockObj, None, None, parserFunction=HouseScan_DataParser.getListingStatus) == expected_status
+    assert DataParser.getAttribute(mockObj, None, None, parserFunction=DataParser_HouseScan.getListingStatus) == expected_status
 
 @pytest.mark.parametrize("trackingList,key,default,expected", [
     ([{'key': 'testKey', 'value': 'testValue'}], 'testKey', None, 'testValue'),
@@ -122,7 +122,7 @@ def test_getListingStatus_with_statuses(status_key, expected_status):
     ([{'key': 'duplicateKey', 'value': 'firstValue'}, {'key': 'duplicateKey', 'value': 'secondValue'}], 'duplicateKey', 'multipleFound', 'multipleFound'),
 ])
 def test_parseTrackingList(trackingList, key, default, expected):
-    assert DataParser.getAttribute(trackingList, key, default, parserFunction=HouseScan_DataParser.parseTrackingList) == expected
+    assert DataParser.getAttribute(trackingList, key, default, parserFunction=DataParser_HouseScan.parseTrackingList) == expected
 
 @pytest.mark.parametrize("trackingList,keyword,default,expected", [
     ([{'key': 'item', 'value': 'keyword:expectedValue;'}], 'keyword', None, 'expectedValue'),
@@ -132,7 +132,7 @@ def test_parseTrackingList(trackingList, key, default, expected):
     ([{'key': 'item', 'value': 'no match'}], 'keyword', 'noMatch', 'noMatch'),
 ])
 def test_parseMiscItemsInTrackingList(trackingList, keyword, default, expected):
-    assert DataParser.getAttribute(trackingList, keyword, default, parserFunction=HouseScan_DataParser.parseMiscItemsInTrackingList) == expected
+    assert DataParser.getAttribute(trackingList, keyword, default, parserFunction=DataParser_HouseScan.parseMiscItemsInTrackingList) == expected
 
 @pytest.mark.parametrize("home,path,default,expected", [
     ({"bathrooms": {"summaryBathrooms": "!wow2ba"}}, ['bathrooms', 'summaryBathrooms'], None, '2'),
@@ -142,7 +142,7 @@ def test_parseMiscItemsInTrackingList(trackingList, keyword, default, expected):
     ({"bedrooms": {}}, ['bedrooms', 'summaryBedrooms'], 'testing', 'testing'),
 ])
 def test_getBathroomsBedrooms(home, path, default, expected):
-    assert DataParser.getAttribute(home, path, default, parserFunction=HouseScan_DataParser.getBathroomsBedrooms) == expected
+    assert DataParser.getAttribute(home, path, default, parserFunction=DataParser_HouseScan.getBathroomsBedrooms) == expected
 
 @pytest.mark.parametrize("home,searchType,default,expected", [
     ({"activeListing": {"dateListed": "2022-01-02T12:34:56"}}, 'FOR_SALE', None, '2022-01-02'),
@@ -150,4 +150,4 @@ def test_getBathroomsBedrooms(home, path, default, expected):
     ({}, 'FOR_RENT', 'testdefault', 'testdefault')
 ])
 def test_getDateListedOrSold(home, searchType, default, expected):
-    assert DataParser.getAttribute(home, None, default, parserFunction=HouseScan_DataParser.getDateListedOrSold, searchType=searchType) == expected
+    assert DataParser.getAttribute(home, None, default, parserFunction=DataParser_HouseScan.getDateListedOrSold, searchType=searchType) == expected

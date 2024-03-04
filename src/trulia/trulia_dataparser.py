@@ -56,7 +56,7 @@ class DataParser():
             return default
         
 
-class HouseScan_DataParser(DataParser):
+class DataParser_HouseScan(DataParser):
 
     def __init__(self, data: dict, payload: dict, attributesToPop=['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
             'preferences', 'providerListingId']):
@@ -193,7 +193,7 @@ class HouseScan_DataParser(DataParser):
         else:
             return default
     
-class DetailedScrape_DataParser(DataParser):
+class DataParser_DetailedScrape(DataParser):
 
     def __init__(self, dataToParse: dict, scrapedHomes: dict[OrderedDict], attributesToPop=[]):
         super().__init__(dataToParse, attributesToPop)
@@ -211,10 +211,10 @@ class DetailedScrape_DataParser(DataParser):
         if isinstance(scrapedHomes, dict) and all(isinstance(home, OrderedDict) for home in scrapedHomes.values()):
             self._scrapedHomes = scrapedHomes
         elif isinstance(scrapedHomes, dict):
-            LOGGER.warning('Could not assign scraped homes to DetailedScrape_DataParser, object needs to be a dict of OrderedDict.')
+            LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
             LOGGER.warning('Element types of object indices: {scrapedHomesTypes}'.format(scrapedHomesTypes=[type(home) for home in scrapedHomes.values()]))
         else:
-            LOGGER.warning('Could not assign scraped homes to DetailedScrape_DataParser, object needs to be a dict of OrderedDict.')
+            LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
 
     def parseHouseData(self, listingsData: dict, scrapedHomes: dict[OrderedDict]):
         for homeData in listingsData['data'].values():

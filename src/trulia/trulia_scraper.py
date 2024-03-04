@@ -21,18 +21,21 @@ class TruliaScraper(Scraper.Scraper):
         self._data = None
 
     def makeRequest(self) -> None:
-        response = requests.request(
+        response = self.returnResponse()
+        if response.status_code == 200:
+            self.data = response.text
+        else:
+            self.data = None
+            LOGGER.warning('Code [{statusCode}]: {text}'.format(statusCode=response.status_code, text=response.text))
+
+    def returnResponse(self):
+        return requests.request(
             "POST", 
             url=self.url, 
             headers=self.headers, 
             data=self.payload, 
             verify=False
         )
-        if response.status_code == 200:
-            self.data = response.text
-        else:
-            self.data = None
-            LOGGER.warning('Code [{statusCode}]: {text}'.format(statusCode=response.status_code, text=response.text))
 
     @property
     def data(self):

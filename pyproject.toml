@@ -8,19 +8,19 @@ version = "0.1.0"
 description = "Project"
 authors = [{name = "Ryan", email = "your.email@example.com"}]
 dependencies = [
-    "certifi==2023.11.17",
-    "charset-normalizer==3.3.2",
-    "et-xmlfile==1.1.0",
-    "idna==3.6",
-    "numpy==1.26.3",
-    "openpyxl==3.1.2",
-    "pandas==2.2.0",
-    "python-dateutil==2.8.2",
-    "pytz==2023.3.post1",
-    "requests==2.31.0",
-    "six==1.16.0",
-    "tzdata==2023.4",
-    "urllib3==2.1.0"
+    "certifi>=2023.11.17, <2025.0.0",
+    "charset-normalizer>=3.3.2, <4.0.0",
+    "et-xmlfile>=1.1.0, <2.0.0",
+    "idna>=3.6, <4.0.0",
+    "numpy>=1.26.3, <1.27.0",
+    "openpyxl>=3.1.2, <4.0.0",
+    "pandas>=2.2.0, <2.3.0",
+    "python-dateutil>=2.8.2, <3.0.0",
+    "pytz>=2023.3.post1, <2025.0.0",
+    "requests>=2.31.0, <3.0.0",
+    "six>=1.16.0, <2.0.0",
+    "tzdata>=2023.4, <2025.0.0",
+    "urllib3>=2.1.0, <3.0.0"
 ]
 
 [tool.setuptools]

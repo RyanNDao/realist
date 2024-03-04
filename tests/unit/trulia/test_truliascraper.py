@@ -32,23 +32,14 @@ def test_trulia_scraper_detailed_scrape():
     ]))
     assert json.loads(scraper.payload) == pytest.JSON_DATA['expected_detailed_scrape_payload']
 
-@patch('trulia.trulia_scraper.requests.request')
-def test_trulia_scraper_house_scan_make_request(mockResponse):
-    mockResponseReturn = Mock()
-    mockResponseReturn.status_code = 200
-    mockResponseReturn.text = pytest.JSON_DATA['mocked_trulia_house_scan_response_default']
-    mockResponse.return_value = mockResponseReturn
+
+def test_trulia_scraper_house_scan_make_request():
     scraper = TruliaScraper(PayloadGenerator_HouseScan())
     assert scraper.data == None
     scraper.makeRequest()
     assert scraper.data == pytest.JSON_DATA['mocked_trulia_house_scan_response_default']
 
-@patch('trulia.trulia_scraper.requests.request')
-def test_trulia_scraper_detailed_scrape_make_request(mockResponse):
-    mockResponseReturn = Mock()
-    mockResponseReturn.status_code = 200
-    mockResponseReturn.text = pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default']
-    mockResponse.return_value = mockResponseReturn
+def test_trulia_scraper_detailed_scrape_make_request():
     scraper = TruliaScraper(PayloadGenerator_DetailedHouseScraper(
         pytest.JSON_DATA['mocked_trulia_urls_list']
     ))

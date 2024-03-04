@@ -2,7 +2,9 @@ import pytest
 import json
 import os
 from dotenv import load_dotenv
-
+from unittest.mock import Mock
+from trulia.trulia_scraper import TruliaScraper
+from trulia.trulia_payloadgenerator import PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper
 
 pytest.testDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -13,8 +15,6 @@ def load_env():
 def pytest_configure(config):
     loadAllJsonData()
 
-
-
 def loadAllJsonData():
     jsonDirectory = os.path.join(pytest.testDirectory, 'data')
     pytest.JSON_DATA = {}
@@ -24,3 +24,20 @@ def loadAllJsonData():
             with open(file_path, 'r', encoding='utf-8') as file:
                 key = os.path.splitext(filename)[0]
                 pytest.JSON_DATA[key] = json.load(file)
+                
+@pytest.fixture(autouse=True)
+def mock_method_based_on_instance_attribute(mocker):
+    def mockResponseBasedOnPayloadGeneratorObject(instance):
+        mockResponseReturnObject = Mock()
+        if isinstance(instance.payloadGenerator, PayloadGenerator_HouseScan):
+            mockResponseReturnObject.status_code = 200
+            mockResponseReturnObject.text = pytest.JSON_DATA['mocked_trulia_house_scan_response_default']
+        elif isinstance(instance.payloadGenerator, PayloadGenerator_DetailedHouseScraper):
+            mockResponseReturnObject.status_code = 200
+            mockResponseReturnObject.text = pytest.JSON_DATA['mocked_trulia_detailed_scrape_response_default']
+        else:
+            mockResponseReturnObject.status_code = 400
+            mockResponseReturnObject.text = 'instance payloadGenerator attribute is not a PayloadGenerator object'
+        return mockResponseReturnObject
+        
+    mocker.patch.object(TruliaScraper, 'returnResponse', mockResponseBasedOnPayloadGeneratorObject)
