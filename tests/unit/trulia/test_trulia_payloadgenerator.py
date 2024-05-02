@@ -6,7 +6,7 @@ from trulia.trulia_scraper import TruliaScraper
 from trulia.trulia_payloadgenerator import PayloadGenerator_DetailedHouseScraper, PayloadGenerator_HouseScan
 
 from helpers.common_helpers import *  
-import constants
+from trulia import constants
 
 LOGGER = logging.getLogger(__name__)
 

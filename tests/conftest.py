@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from unittest.mock import Mock
 from trulia.trulia_scraper import TruliaScraper
 from trulia.trulia_payloadgenerator import PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper
+from database.models.TruliaHouseListing import TruliaHouseListing
+from .data.fixtures_data import *
+from database.common.DatabaseConnectionPool import DatabaseConnectionPool
 
 pytest.testDirectory = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,9 +27,15 @@ def loadAllJsonData():
             with open(file_path, 'r', encoding='utf-8') as file:
                 key = os.path.splitext(filename)[0]
                 pytest.JSON_DATA[key] = json.load(file)
-                
+
+@pytest.fixture(scope="session")
+def connectionPool():
+    pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING'))
+    yield pool
+    pool.close_pool()
+
 @pytest.fixture(autouse=True)
-def mock_method_based_on_instance_attribute(mocker):
+def mockTruliaApiCall(mocker):
     def mockResponseBasedOnPayloadGeneratorObject(instance):
         mockResponseReturnObject = Mock()
         if isinstance(instance.payloadGenerator, PayloadGenerator_HouseScan):
@@ -39,5 +48,8 @@ def mock_method_based_on_instance_attribute(mocker):
             mockResponseReturnObject.status_code = 400
             mockResponseReturnObject.text = 'instance payloadGenerator attribute is not a PayloadGenerator object'
         return mockResponseReturnObject
-        
     mocker.patch.object(TruliaScraper, 'returnResponse', mockResponseBasedOnPayloadGeneratorObject)
+
+@pytest.fixture
+def mockTruliaHouseListingData():
+    return truliaHouseListingTestDicts

@@ -42,10 +42,13 @@ class DataParser():
         return currentLevel if currentLevel else default
 
     @staticmethod
-    def getAttribute(obj: dict, path: list[str] | str, default=None, parserFunction: Callable = None, **kwargs):
+    def getAttribute(obj: dict, path: list[str] | str, default=None, parserFunction: Callable = None, mustReturnSomething: bool = False, **kwargs):
         parserFunction = parserFunction if parserFunction else DataParser.defaultParse
         try:
-            return parserFunction(obj, path, default, **kwargs)
+            returnedAttribute = parserFunction(obj, path, default, **kwargs)
+            if (returnedAttribute == None) and mustReturnSomething:
+                raise Exception('Nothing was returned while parsing even though something was expected!')
+            return returnedAttribute
         except Exception as e:
             LOGGER.warning('A(n) {errorType} has occurred while extracting home data: {e} | Path: {path} | Parser Function: {func}'.format(
                 errorType = e.__class__.__name__,
@@ -53,6 +56,8 @@ class DataParser():
                 path = path,
                 func = parserFunction.__name__
             ))
+            if mustReturnSomething:
+                raise Exception(e)
             return default
         
 
@@ -95,6 +100,7 @@ class DataParser_HouseScan(DataParser):
             extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', ''))
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
+            extractedPrimaryData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'], mustReturnSomething=True)
             return extractedPrimaryData
         except AttributeError:
             if location:= homeData.get('location', ''):
@@ -111,9 +117,7 @@ class DataParser_HouseScan(DataParser):
     def extractSupplementaryDataFromHome(self, homeData: dict, parsedHomeData: OrderedDict) -> OrderedDict:
         parsedHomeData['city'] = self.getAttribute(homeData, ['location', 'city'])
         parsedHomeData['state'] = self.getAttribute(homeData, ['location', 'stateCode'])
-        parsedHomeData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'])
         parsedHomeData['floor_sqft'] = self.getAttribute(homeData, ['floorSpace', 'formattedDimension'])
-        parsedHomeData['lot_size'] = self.getAttribute(homeData, ['lotSize', 'formattedDimension'])
         parsedHomeData['bedrooms'] = self.getAttribute(homeData, ['bedrooms', 'formattedValue'], default=None, parserFunction=self.getBathroomsBedrooms)
         parsedHomeData['bathrooms'] = self.getAttribute(homeData, ['bathrooms', 'formattedValue'], default=None, parserFunction=self.getBathroomsBedrooms)
         parsedHomeData['trulia_listing_id'] = self.getAttribute(homeData, ['metadata', 'legacyIdForSave'])
@@ -320,7 +324,7 @@ class DataParser_DetailedScrape(DataParser):
                 ('formattedName', 'Lot Information', 'attributes'),
                 ('formattedName', 'Lot Area', 'formattedValue')
             ], None, parserFunction=self.getFeature)
-            associatedHome['listing_id'] = self.getAttribute(featuresData, [
+            associatedHome['mls_listing_id'] = self.getAttribute(featuresData, [
                 'categories', 
                 ('formattedName', 'Agent Information', 'categories'),
                 ('formattedName', 'Listing Agent', 'attributes'),

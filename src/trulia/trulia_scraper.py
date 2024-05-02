@@ -1,5 +1,4 @@
-from scrapers import Scraper
-import constants
+from trulia import constants
 import copy
 from helpers import common_helpers
 from trulia.trulia_payloadgenerator import PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper
@@ -10,7 +9,7 @@ import json
 
 LOGGER = logging.getLogger(__name__)
 
-class TruliaScraper(Scraper.Scraper):
+class TruliaScraper():
 
     def __init__(self, payloadGenerator: PayloadGenerator_HouseScan | PayloadGenerator_DetailedHouseScraper, scrapeUrl=''):
         self.headers = copy.deepcopy(constants.TRULIA_HEADERS)
@@ -78,7 +77,7 @@ class TruliaScraper(Scraper.Scraper):
         if isinstance(payloadGenerator, (PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper)):
             self.payload = payloadGenerator.payload
         else:
-            LOGGER.error('Argument passed is not of type PayloadGenerator, instead it is {dataType}. Could not extract payload.'.format(dataType=type(scraperType)))
+            LOGGER.error('Argument passed is not of type PayloadGenerator, instead it is {dataType}. Could not extract payload.'.format(dataType=type(payloadGenerator)))
 
     
     

@@ -1,4 +1,4 @@
-import constants
+from trulia import constants
 import logging
 import json
 import requests

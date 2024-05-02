@@ -1,4 +1,4 @@
-import TruliaApiScraper
+import legacy.TruliaApiScraper as TruliaApiScraper
 import pandas as pd
 import json
 import sqlite3

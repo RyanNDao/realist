@@ -30,7 +30,6 @@ def test_trulia_house_scan_check_home_data():
     assert homeData['state']
     assert homeData['zip']
     assert homeData['floor_sqft']
-    assert homeData['lot_size'] == None
     assert homeData['bedrooms'] and type(homeData['bedrooms']) == str
     assert homeData['bathrooms'] and type(homeData['bathrooms']) == str
     assert homeData['trulia_listing_id']
@@ -40,7 +39,7 @@ def test_trulia_house_scan_check_home_data():
     assert homeData['property_type']
     assert homeData['parking']
     assert homeData['year_built']
-    assert len(homeData) == 19
+    assert len(homeData) == 18
 
 
 def test_trulia_detailed_scrape_default():
