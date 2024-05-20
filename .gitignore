@@ -13,4 +13,4 @@
 
 **/.env
 
-!/tests/data/*.json
+!**/tests/data/*.json

@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "An scraping project for real estate listings"
 authors = ["Ryan Dao <ryeedao@gmail.com>"]
 readme = "README.md"
-packages = [{include = "*", from="src"}]
+
+[[tool.poetry.packages]]
+include = "backend"
+from = "src"
 
 [tool.poetry.dependencies]
 python = "^3.11"
