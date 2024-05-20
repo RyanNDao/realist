@@ -6,11 +6,11 @@ from database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
 
 
-load_dotenv()
-pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING'))
-with pool.managed_connection_cursor(disableAutoCommit=True) as cursor:
-    truliaHouseListingDAO = TruliaHouseListingDAO(cursor)
-    truliaHouseListingService = TruliaHouseListingService(truliaHouseListingDAO)
+# load_dotenv()
+# pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING'))
+# with pool.managed_connection_cursor(disableAutoCommit=True) as cursor:
+#     truliaHouseListingDAO = TruliaHouseListingDAO(cursor)
+#     truliaHouseListingService = TruliaHouseListingService(truliaHouseListingDAO)
 
 # # Create a cursor object
 # cur = dbConnection.cursor()

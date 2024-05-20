@@ -21,7 +21,7 @@ def recursive_lookup(key, obj, path=None):
 def editQueryVariables(key, newValue, obj):
     _, path = recursive_lookup(key, obj)
     if not path:
-        LOGGER.warning('Did not find attribute "{attribute}" in query options'.format(attribute=key))
+        LOGGER.warning(f'Did not find attribute "{key}" in query options')
     nodeToEdit = obj
     for node in path:
         if node == key:

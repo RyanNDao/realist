@@ -53,6 +53,13 @@ class TruliaHouseListing:
             dictObject[attributeName] = self.__getattribute__(attributeName)
         return dictObject
     
+    def __getattribute__(self, attributeName):
+        if isinstance(super().__getattribute__(attributeName), ModelAttribute):
+            # when an attribute is not set, it will be ModelAttribute class by default
+            # so this is used to return the true value (which is None)
+            return None
+        return super().__getattribute__(attributeName)
+    
     def __eq__(self, other):
         if not isinstance(other, TruliaHouseListing):
             return False

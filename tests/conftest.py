@@ -1,15 +1,17 @@
 import pytest
 import json
 import os
+import logging
 from dotenv import load_dotenv
 from unittest.mock import Mock
 from trulia.trulia_scraper import TruliaScraper
 from trulia.trulia_payloadgenerator import PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper
 from database.models.TruliaHouseListing import TruliaHouseListing
-from .data.fixtures_data import *
+from tests.data.fixtures_data import *
 from database.common.DatabaseConnectionPool import DatabaseConnectionPool
 
 pytest.testDirectory = os.path.dirname(os.path.abspath(__file__))
+LOGGER = logging.getLogger(__name__)
 
 @pytest.fixture(scope='session', autouse=True)
 def load_env():

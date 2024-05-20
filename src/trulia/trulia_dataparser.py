@@ -28,7 +28,7 @@ class DataParser():
             self._data = data
         elif isinstance(data, type(None)):
             self._data = None
-            LOGGER.warning('Data type of TruliaScraper instance has been set to None. Check to see if this is expected')
+            LOGGER.warning('Data type of DataParser instance has been set to None. Check to see if this is expected')
         else:
             LOGGER.error('Data type of {dataType} is invalid. Convert to dict or string.'.format(dataType=type(data)))
             raise AttributeError('data type is invalid')

@@ -3,7 +3,8 @@
 **/.DS_Store
 **/.idea
 **/*.egg-info/
-
+**/.vscode
+.coverage
 *.json
 *.xlsx
 *.csv

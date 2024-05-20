@@ -15,10 +15,10 @@ class TruliaHouseListingService():
         return TruliaHouseListing(**normalizedHomeData)
     
     @staticmethod
-    def normalizehomeDictData(homeDictData):
+    def normalizehomeDictData(homeDictData: dict):
         homeDictDataCopy = copy.deepcopy(homeDictData)
         homeDictDataCopy.pop('url', None)
-        homeDictDataCopy['key'] = '{address}, {zip}'.format(address=homeDictDataCopy['address'], zip=homeDictDataCopy['zip'])
+        homeDictDataCopy['key'] = f'{homeDictDataCopy["address"]}, {homeDictDataCopy["zip"]}'
         if homeDictDataCopy.get('floor_sqft'):
             homeDictDataCopy['floor_sqft'] = int(re.search(r'(\d+)', homeDictDataCopy['floor_sqft']).group(0)) if isinstance(homeDictDataCopy.get('floor_sqft'), str) else homeDictDataCopy['floor_sqft']
         if homeDictDataCopy.get('lot_sqft'):

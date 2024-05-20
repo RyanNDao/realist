@@ -22,7 +22,7 @@ class ModelAttribute():
 
     def __set__(self, instance, value):
         if not isinstance(value, self.type) and not (self.optional and isinstance(value, (type(None), ModelAttribute))):
-            raise TypeError(f"Unable to set value because {self.name} values "
+            raise TypeError(f"Unable to set value because '{self.name}' values "
                 f"{'are not optional and ' if not self.optional else ''}"
                 f"must be of type {self.type!r}. "
                 f"Instead, it is {type(value) if not isinstance(value, ModelAttribute) else 'empty!'}.")

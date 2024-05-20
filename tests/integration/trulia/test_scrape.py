@@ -9,7 +9,9 @@ import psycopg
 LOGGER = logging.getLogger(__name__)
 
 
-def test_end_to_end_scraping_and_parse():    
+def test_end_to_end_scraping_and_parse():
+    # the end to end flow is a little confusing
+    # TODO: refactor this so that its intuitive
     payloadGeneratorHouseScan = PayloadGenerator_HouseScan()
     scraper = TruliaScraper(payloadGeneratorHouseScan)
     scraper.makeRequest()
