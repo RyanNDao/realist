@@ -13,4 +13,5 @@
 
 **/.env
 
+/node_modules
 !**/tests/data/*.json
