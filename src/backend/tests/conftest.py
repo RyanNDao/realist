@@ -31,7 +31,7 @@ def loadAllJsonData():
 
 @pytest.fixture(scope="session")
 def connectionPool():
-    pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING'))
+    pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING_TEMPLATE').format('home_data'))
     yield pool
     pool.close_pool()
 

@@ -21,6 +21,22 @@ To set up the project environment, follow these steps:
     poetry install
     ```
 
+## Starting the Server
+
+To get the Realist application up and running, follow these steps to start both the backend and frontend servers:
+
+### Backend Server
+The backend server is built with Flask. To start the backend server, use the following command:
+```bash
+poetry run start-flask
+```
+
+### Frontend Server
+The frontend interface is developed using React. Start the frontend development server by running:
+```bash
+npm run dev
+```
+
 ## Testing
 To run tests and ensure the functionality of the application, use the following command:
 ``` bash

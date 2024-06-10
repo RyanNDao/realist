@@ -8,20 +8,16 @@ from psycopg import Error, errors
 LOGGER = logging.getLogger(__name__)
 
 class DatabaseConnectionPool:
-    _instance = None
 
-    def __new__(cls, connectionString: str = None):
-        if cls._instance is None:
-            if connectionString is None:
-                raise ValueError('Connection string not provided for connection pool!')
-            cls._instance = super(DatabaseConnectionPool, cls).__new__(cls)
-            cls._instance.pool = ConnectionPool(
-                conninfo=connectionString,
-                min_size=2,
-                max_size=6,
-                open=True
-            )
-        return cls._instance
+    def __init__(self, connectionString: str = None):
+        if connectionString is None:
+            raise ValueError('Connection string not provided for connection pool!')
+        self.pool = ConnectionPool(
+            conninfo=connectionString,
+            min_size=2,
+            max_size=6,
+            open=True
+        )
     
     def get_connection(self):
         return self.pool.connection()
