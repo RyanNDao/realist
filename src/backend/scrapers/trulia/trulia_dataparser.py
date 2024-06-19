@@ -63,11 +63,11 @@ class DataParser():
 
 class DataParser_HouseScan(DataParser):
 
-    def __init__(self, data: dict, payload: dict, attributesToPop=['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
+    def __init__(self, data: dict, payload: dict | str, attributesToPop=['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
             'preferences', 'providerListingId']):
         super().__init__(data, attributesToPop)
         self.urls = []
-        self.searchType = self.getAttribute(payload, ['variables', 'searchDetails', 'searchType'], default='FOR_SALE')
+        self.searchType = self.getAttribute(payload if type(payload) == dict else json.loads(payload) , ['variables', 'searchDetails', 'searchType'], default='FOR_SALE')
         self.scrapedHomes = self.parseHouseData(copy.deepcopy(self.data))
         
     def __len__(self):

@@ -4,7 +4,7 @@ import React from "react";
 
 export function ScraperContainer() {
     function scrapeWebsite(){
-        makeRequest('/api/test-error', 'GET')
+        makeRequest('/api/trulia/scrape', 'GET')
     }
     
     return (

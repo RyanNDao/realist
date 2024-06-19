@@ -3,6 +3,7 @@ from backend.server.utils.ResponseBuilder import ResponseBuilder
 import bcrypt
 from backend.database.services.UserService import UserService
 from injector import inject
+
 userControllerBp = Blueprint('userController', import_name=__name__,  url_prefix='/user')
 
 

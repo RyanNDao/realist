@@ -12,4 +12,4 @@ def handle_db_error(error):
 
 @exceptionHandlerBp.app_errorhandler(Exception)
 def handle_unhandled_error(error):
-    return ResponseBuilder.buildFailureResponse(f'An unhandled error has occurred: {error.cause}', 400)
+    return ResponseBuilder.buildFailureResponse(f'An unhandled error has occurred: {error}', 400)

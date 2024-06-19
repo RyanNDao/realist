@@ -1,11 +1,13 @@
 from flask import Flask
+from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
+from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
 from backend.exceptions import CursorError
 from backend.server.utils.ResponseBuilder import ResponseBuilder
 from flask_login import LoginManager
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
 from dotenv import load_dotenv
-from backend.server.controllers import UserController
+from backend.server.controllers import UserController, TruliaScraperController
 from flask_injector import FlaskInjector
 from injector import singleton, Binder
 from backend.database.dao.UserDAO import UserDAO
@@ -19,6 +21,9 @@ def create_app() -> Flask:
         user_dao = UserDAO(app.db_pool['users'])
         user_service = UserService(user_dao)
         binder.bind(UserService, to=user_service, scope=singleton)
+        trulia_house_listing_dao = TruliaHouseListingDAO(app.db_pool['home_data'])
+        trulia_house_listing_service = TruliaHouseListingService(trulia_house_listing_dao)
+        binder.bind(TruliaHouseListingService, to=trulia_house_listing_service, scope=singleton)
     
     app = Flask(__name__)
     app.db_pool = {
@@ -26,6 +31,7 @@ def create_app() -> Flask:
         'users': DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING_TEMPLATE').format('users'))
     }
     app.register_blueprint(UserController.userControllerBp, url_prefix='/api/user')
+    app.register_blueprint(TruliaScraperController.truliaScraperBp, url_prefix='/api/trulia')
     app.register_blueprint(exception_handling_config.exceptionHandlerBp)
 
     FlaskInjector(app=app, modules=[configure_injections])

@@ -2,7 +2,11 @@ from backend.database.models.TruliaHouseListing import TruliaHouseListing
 from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
 import copy
 import re
-from datetime import datetime, date
+from datetime import datetime
+from backend.helpers.common_helpers import safeParseInt
+from backend.scrapers.trulia.trulia_dataparser import DataParser_DetailedScrape, DataParser_HouseScan
+from backend.scrapers.trulia.trulia_payloadgenerator import PayloadGenerator_DetailedHouseScraper, PayloadGenerator_HouseScan
+from backend.scrapers.trulia.trulia_scraper import TruliaScraper
 
 class TruliaHouseListingService():
 
@@ -26,7 +30,26 @@ class TruliaHouseListingService():
         if homeDictDataCopy.get('date_listed_or_sold'):
             homeDictDataCopy['date_listed_or_sold'] = datetime.strptime(homeDictDataCopy['date_listed_or_sold'], '%Y-%m-%d')
         if homeDictDataCopy.get('year_built'):
-            homeDictDataCopy['year_built'] = int(homeDictDataCopy['year_built'])
+            homeDictDataCopy['year_built'] = safeParseInt(homeDictDataCopy['year_built'])
         if homeDictDataCopy.get('year_renovated'):
-            homeDictDataCopy['year_renovated'] = int(homeDictDataCopy['year_renovated'])
+            homeDictDataCopy['year_renovated'] = safeParseInt(homeDictDataCopy['year_renovated'])
         return homeDictDataCopy
+    
+    @staticmethod
+    def scrapeTruliaData():
+        payloadGeneratorHouseScan = PayloadGenerator_HouseScan()
+        scraper = TruliaScraper(payloadGeneratorHouseScan)
+        scraper.makeRequest()
+        dataParserHouseScan = DataParser_HouseScan(scraper.data, scraper.payload)
+        scraper.generatePayload(PayloadGenerator_DetailedHouseScraper(dataParserHouseScan.urls))
+        scraper.makeRequest()
+        dataParserDetailedScrape = DataParser_DetailedScrape(scraper.data, dataParserHouseScan.scrapedHomes)
+        return dataParserDetailedScrape
+    
+
+    def insertNormalizedDataIntoDb(self, truliaListingObject: TruliaHouseListing):
+        if self._truliaHouseListingDAO.getListingByKey(truliaListingObject.key):
+            self._truliaHouseListingDAO.updateListingEntryInTable(truliaListingObject)
+        else:
+            self._truliaHouseListingDAO.insertListingIntoTable(truliaListingObject)
+
