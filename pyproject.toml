@@ -25,6 +25,12 @@ Flask-Injector = "^0.15.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.1"
 pytest-mock = "^3.14.0"
+pytest-cov = "^5.0.0"
+
+[tool.coverage.run]
+omit = [
+    "src/backend/tests/*"
+]
 
 [build-system]
 requires = ["poetry-core"]
