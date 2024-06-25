@@ -97,7 +97,7 @@ class DataParser_HouseScan(DataParser):
         try:
             extractedPrimaryData['location'] = ' '.join(homeData['location']['fullLocation'].split())
             extractedPrimaryData['address'] = ' '.join(homeData['location']['partialLocation'].split())
-            extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', ''))
+            extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', '').replace('/mo',''))
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
             extractedPrimaryData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'], mustReturnSomething=True)

@@ -10,7 +10,7 @@ truliaScraperBp = Blueprint('truliaScraperController', import_name=__name__,  ur
 
 class TruliaScraperController():
 
-    @truliaScraperBp.route('/scrape', methods=['GET'])
+    @truliaScraperBp.route('/scrape/for_sale', methods=['GET'])
     @inject
     def scrapeTrulia(trulia_house_listing_service: TruliaHouseListingService):
         truliaData = trulia_house_listing_service.scrapeTruliaData()
@@ -18,6 +18,22 @@ class TruliaScraperController():
             try:
                 normalizedHomeData = trulia_house_listing_service.createTruliaHouseListingDataObject(homeData)
                 trulia_house_listing_service.insertNormalizedDataIntoDb(normalizedHomeData)
+                LOGGER.info(f'Scraped listing with the key: {normalizedHomeData.key}')
+            except Exception as e:
+                LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {normalizedHomeData.dict}')
+        return ResponseBuilder.buildSuccessResponse(truliaData.scrapedHomes, 'Scrape successful!')
+    
+
+    @truliaScraperBp.route('/scrape/for_rent', methods=['GET'])
+    @inject
+    def scrapeTruliaRentals(trulia_house_listing_service: TruliaHouseListingService):
+        truliaData = trulia_house_listing_service.scrapeTruliaRentalData()
+        for homeData in truliaData.scrapedHomes.values():
+            LOGGER.warning(homeData)
+            try:
+                normalizedHomeData = trulia_house_listing_service.createTruliaHouseListingDataObject(homeData)
+                trulia_house_listing_service.insertNormalizedDataIntoDb(normalizedHomeData)
+                LOGGER.info(f'Scraped listing with the key: {normalizedHomeData.key}')
             except Exception as e:
                 LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {normalizedHomeData.dict}')
         return ResponseBuilder.buildSuccessResponse(truliaData.scrapedHomes, 'Scrape successful!')

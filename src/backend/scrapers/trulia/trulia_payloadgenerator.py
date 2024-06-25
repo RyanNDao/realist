@@ -61,6 +61,7 @@ class PayloadGenerator_DetailedHouseScraper():
             ...HomeDetailsListingProviderFragment
             ...HomeDetailsFeaturesFragment
             ...HomeDetailsPriceHistoryFragment
+            ...HomeDetailsNeighborhoodOverviewFragment
         }}""" for i in range(len(urls))
         ])
         

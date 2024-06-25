@@ -46,6 +46,17 @@ class TruliaHouseListingService():
         dataParserDetailedScrape = DataParser_DetailedScrape(scraper.data, dataParserHouseScan.scrapedHomes)
         return dataParserDetailedScrape
     
+    @staticmethod
+    def scrapeTruliaRentalData():
+        payloadGeneratorHouseScan = PayloadGenerator_HouseScan(searchType='FOR_RENT', limit=500)
+        scraper = TruliaScraper(payloadGeneratorHouseScan)
+        scraper.makeRequest()
+        dataParserHouseScan = DataParser_HouseScan(scraper.data, scraper.payload)
+        scraper.generatePayload(PayloadGenerator_DetailedHouseScraper(dataParserHouseScan.urls))
+        scraper.makeRequest()
+        dataParserDetailedScrape = DataParser_DetailedScrape(scraper.data, dataParserHouseScan.scrapedHomes)
+        return dataParserDetailedScrape
+    
 
     def insertNormalizedDataIntoDb(self, truliaListingObject: TruliaHouseListing):
         if self._truliaHouseListingDAO.getListingByKey(truliaListingObject.key):
