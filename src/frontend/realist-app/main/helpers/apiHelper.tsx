@@ -1,3 +1,5 @@
+import { ApiFailureResponse, ApiSuccessResponse } from "./globalInterfaces";
+
 export class ApiError extends Error {
     error: string;
     status: number;
@@ -17,8 +19,8 @@ const makeRequest = async (
     method: string, 
     headers: Record<string, string> = {},
     params?: Record<string, string | number>,
-    requestBody?: Map<string, any>
-): Promise<any> => {
+    requestBody?: Object,
+): Promise<ApiSuccessResponse> => {
     try {
         let requestUrl = new URL(endpoint, window.location.origin);
         if (params) {
@@ -47,7 +49,7 @@ const makeRequest = async (
 
         const responseJson = await response.json();
         if (Object.prototype.hasOwnProperty.call(responseJson, 'success') && Object.prototype.hasOwnProperty.call(responseJson, 'data') && responseJson.success) {
-            return responseJson.data;
+            return (responseJson as ApiSuccessResponse);
         } else {
             throw new ApiError(`${responseJson.message}`, 500);
         }

@@ -15,7 +15,14 @@ class TruliaHouseListingDAO():
 
     def getAllListings(self, tableName=TRULIA_MAIN_TABLE_NAME) -> list:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
-            cursor.execute(f'SELECT * FROM {tableName}')
+            cursor.execute(f"SELECT * FROM {tableName} WHERE listing_status = 'For Sale'")
+            rows = cursor.fetchall()
+            LOGGER.info(f'getAllListings returned {len(rows)} total results')
+            return rows
+        
+    def getAllRentals(self, tableName=TRULIA_MAIN_TABLE_NAME) -> list:
+        with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
+            cursor.execute(f"SELECT * FROM {tableName} WHERE listing_status = 'For Rent'")
             rows = cursor.fetchall()
             LOGGER.info(f'getAllListings returned {len(rows)} total results')
             return rows

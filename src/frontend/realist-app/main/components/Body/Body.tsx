@@ -1,4 +1,4 @@
-import { Box, Flex, Tabs } from "@chakra-ui/react";
+import { Box, Flex, Tabs, useBreakpointValue } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { Sidebar } from "../Sidebar/Sidebar";
 import { MainContent } from "../MainContent/MainContent";
@@ -12,16 +12,14 @@ export function Body(){
     const switchTabs = (index: number) => {
         setTabIndex(index);
     };
-
+    const responseOrientation = useBreakpointValue<'vertical' | 'horizontal' | undefined>(
+        { base: 'horizontal', md: 'vertical' }
+    );
 
     return (
-            <Tabs flexGrow={1} isFitted variant="enclosed" orientation="vertical">
-                
-                    <Sidebar tabIndex={tabIndex}/>
-                    <MainContent tabIndex={tabIndex}/>
-                
-            </Tabs>
-
-
+        <Tabs flexGrow={1} isFitted variant="enclosed" orientation={responseOrientation}>
+            <Sidebar tabIndex={tabIndex}/>
+            <MainContent tabIndex={tabIndex}/>
+        </Tabs>
       );
 }

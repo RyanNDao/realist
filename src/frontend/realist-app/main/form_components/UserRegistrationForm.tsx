@@ -1,4 +1,4 @@
-import { Center, FormControl, FormLabel, VStack, Input, FormErrorMessage } from "@chakra-ui/react";
+import { Center, FormControl, FormLabel, VStack, Input, FormErrorMessage, Box } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 
 export interface RegistrationInputData {
@@ -38,7 +38,9 @@ export function UserRegistrationForm ({registrationInputData, updateData}: UserR
 
     return (
         <VStack>
-            <FormControl>
+            <div>Coming Soon!</div>
+            <Box textAlign="center">For now, get your login information from Ryan</Box>
+            {/* <FormControl>
                 <FormLabel>
                     Username
                 </FormLabel>
@@ -56,7 +58,7 @@ export function UserRegistrationForm ({registrationInputData, updateData}: UserR
                 </FormLabel>
                 <Input type="password" value={registrationInputData.confirmPassword} onChange={onConfirmPasswordChange} />
                 <FormErrorMessage>Passwords must match!</FormErrorMessage>
-            </FormControl>
+            </FormControl> */}
         </VStack>
     )
 }

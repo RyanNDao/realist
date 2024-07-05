@@ -16,6 +16,7 @@ class DatabaseConnectionPool:
             conninfo=connectionString,
             min_size=2,
             max_size=6,
+            check=ConnectionPool.check_connection,
             open=True
         )
     
@@ -24,6 +25,9 @@ class DatabaseConnectionPool:
     
     def close_pool(self):
         self.pool.close()
+
+    def get_pool_stats(self):
+        return self.pool.get_stats()
     
     @contextmanager
     def managed_connection_cursor(self, disableAutoCommit=False):

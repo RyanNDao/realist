@@ -7,12 +7,11 @@ class UserDAO():
     def __init__(self, connectionPool: DatabaseConnectionPool):
         self.connectionPool = connectionPool
 
-    def getUserById(self, id: str, tableName = USERS_DETAIL_TABLE_NAME):
+    def getUserByUsername(self, username: str, tableName = USERS_DETAIL_TABLE_NAME):
         with self.connectionPool.managed_connection_cursor() as cursor:
-            cursor.execute(f'SELECT * FROM {tableName} WHERE id = %s', (id, ))
+            cursor.execute(f'SELECT * FROM {tableName} WHERE username = %s', (username, ))
             userData = cursor.fetchone()
-            if userData:
-                pass
+            return userData if userData else None
 
     def createNewUser(self, username: str, password: str, tableName = USERS_DETAIL_TABLE_NAME):
         with self.connectionPool.managed_connection_cursor() as cursor:

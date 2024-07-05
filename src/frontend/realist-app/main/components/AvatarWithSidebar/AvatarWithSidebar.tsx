@@ -8,7 +8,7 @@ export function AvatarWithSidebar(){
     return(
         <Box>
             <Avatar cursor="pointer" onClick={onOpen}/>
-            <ProfileSidebar isOpen={isOpen} onClose={onClose}/>
+            {isOpen && <ProfileSidebar isOpen={isOpen} onClose={onClose}/>}
         </Box>
 
     )

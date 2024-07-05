@@ -7,7 +7,6 @@ import { Header } from './components/Header/Header'
 import { Body } from './components/Body/Body'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <Flex direction="column" maxHeight="100vh" maxWidth="100vw" height="100%" width="100%">

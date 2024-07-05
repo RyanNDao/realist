@@ -1,20 +1,38 @@
-import { Button, Center } from "@chakra-ui/react";
+import { Box, Button, Center, Flex } from "@chakra-ui/react";
 import makeRequest from "../../helpers/apiHelper"
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useUser } from "../../hooks/useUser";
 
 export function ScraperContainer() {
-    function scrapeWebsite(){
-        makeRequest('/api/trulia/scrape/for_sale', 'GET')
+    const { user } = useUser();
+
+    const [isFetching, setIsFetching] = useState(false);
+
+    async function scrapeListings(){
+        setIsFetching(true);
+        try {
+            await makeRequest('/api/trulia/scrape?searchType=FOR_SALE&limit=100', 'GET');
+        } finally {
+            setIsFetching(false)
+        }
     }
 
-    function scrapeRentals(){
-        makeRequest('/api/trulia/scrape/for_rent', 'GET')
+    async function scrapeRentals(){
+        setIsFetching(true);
+        try {
+            await makeRequest('/api/trulia/scrape?searchType=FOR_RENT&limit=100', 'GET');
+            
+        } finally {
+            setIsFetching(false);
+        }
     }
     
     return (
-        <Center>
-            <Button onClick={scrapeWebsite}>Scrape Listings</Button>
-            <Button onClick={scrapeRentals}>Scrape Rentals</Button>
-        </Center>
+        <Flex flexDirection="column" height="100%" justifyContent="space-between" gap="10px">
+            <Center>
+                <Button isDisabled={isFetching} onClick={scrapeListings}>Scrape Listings</Button>
+                <Button isDisabled={isFetching} onClick={scrapeRentals}>Scrape Rentals</Button>
+            </Center>
+        </Flex>
     )
 }

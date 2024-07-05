@@ -36,8 +36,8 @@ class TruliaHouseListingService():
         return homeDictDataCopy
     
     @staticmethod
-    def scrapeTruliaData():
-        payloadGeneratorHouseScan = PayloadGenerator_HouseScan()
+    def scrapeTruliaData(**kwargs):
+        payloadGeneratorHouseScan = PayloadGenerator_HouseScan(**kwargs)
         scraper = TruliaScraper(payloadGeneratorHouseScan)
         scraper.makeRequest()
         dataParserHouseScan = DataParser_HouseScan(scraper.data, scraper.payload)
@@ -48,7 +48,7 @@ class TruliaHouseListingService():
     
     @staticmethod
     def scrapeTruliaRentalData():
-        payloadGeneratorHouseScan = PayloadGenerator_HouseScan(searchType='FOR_RENT', limit=500)
+        payloadGeneratorHouseScan = PayloadGenerator_HouseScan(searchType='FOR_RENT', limit=100)
         scraper = TruliaScraper(payloadGeneratorHouseScan)
         scraper.makeRequest()
         dataParserHouseScan = DataParser_HouseScan(scraper.data, scraper.payload)
@@ -64,3 +64,9 @@ class TruliaHouseListingService():
         else:
             self._truliaHouseListingDAO.insertListingIntoTable(truliaListingObject)
 
+
+    def fetchListingsData(self):
+        return self._truliaHouseListingDAO.getAllListings()
+    
+    def fetchRentalData(self):
+        return self._truliaHouseListingDAO.getAllRentals()
