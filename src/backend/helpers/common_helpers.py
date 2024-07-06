@@ -35,3 +35,9 @@ def returnedObjectWithPoppedAttributes(object, attributesToPop: list):
     for attribute in attributesToPop:
         objectToReturn.pop(attribute, None)
     return objectToReturn
+
+def safeParseInt(value):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None

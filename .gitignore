@@ -12,5 +12,9 @@
 /.venv
 
 **/.env
+**/build
+**/node_modules
 
+## EXCLUSIONS ##
 !**/tests/data/*.json
+!**/package.json

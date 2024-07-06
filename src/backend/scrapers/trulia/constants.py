@@ -322,6 +322,7 @@ GRAPHQL_HOUSE_SCAN_QUERY = r"""query WEB_searchResultsMapQuery($searchDetails: S
 		city
 		stateCode
 		zipCode
+        neighborhoodName
 		fullLocation: formattedLocation(formatType: STREET_CITY_STATE_ZIP)
 		partialLocation: formattedLocation(formatType: STREET_ONLY)
 		__typename
@@ -728,6 +729,51 @@ GRAPHQL_DETAILED_SCRAPE_QUERY_TEMPLATE = """
             }}
         }}
     }}
+    
+    fragment HomeDetailsNeighborhoodOverviewFragment on HOME_Details {{
+		surroundings {{
+			...NeighborhoodCardFragment
+			... on SURROUNDINGS_Neighborhood {{
+				neighborhoodAttribution
+				__typename
+			}}
+			__typename
+		}}
+		__typename
+	}}
+
+	fragment NeighborhoodCardFragment on SURROUNDINGS_Neighborhood {{
+		name
+		ndpActive
+		ndpUrl
+		localFacts {{
+			forSaleStats {{
+				min
+				max
+				__typename
+			}}
+			homesForSaleCount
+			forRentStats {{
+				min
+				max
+				__typename
+			}}
+			homesForRentCount
+			soldHomesStats {{
+				min
+				max
+				__typename
+			}}
+			soldHomesCount
+			__typename
+		}}
+		neighborhoodSearchUrlCTA {{
+			forSale
+			forRent
+			__typename
+		}}
+		__typename
+	}}
 
     fragment HomeDetailsPriceHistoryFragment on HOME_Property {{
         titleToPriceHistory

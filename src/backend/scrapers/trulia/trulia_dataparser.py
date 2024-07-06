@@ -63,11 +63,11 @@ class DataParser():
 
 class DataParser_HouseScan(DataParser):
 
-    def __init__(self, data: dict, payload: dict, attributesToPop=['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
+    def __init__(self, data: dict, payload: dict | str, attributesToPop=['media', 'displayFlags', 'activeForSaleListing', 'tags', 'isSaveable',
             'preferences', 'providerListingId']):
         super().__init__(data, attributesToPop)
         self.urls = []
-        self.searchType = self.getAttribute(payload, ['variables', 'searchDetails', 'searchType'], default='FOR_SALE')
+        self.searchType = self.getAttribute(payload if type(payload) == dict else json.loads(payload) , ['variables', 'searchDetails', 'searchType'], default='FOR_SALE')
         self.scrapedHomes = self.parseHouseData(copy.deepcopy(self.data))
         
     def __len__(self):
@@ -97,7 +97,7 @@ class DataParser_HouseScan(DataParser):
         try:
             extractedPrimaryData['location'] = ' '.join(homeData['location']['fullLocation'].split())
             extractedPrimaryData['address'] = ' '.join(homeData['location']['partialLocation'].split())
-            extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', ''))
+            extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', '').replace('/mo',''))
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
             extractedPrimaryData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'], mustReturnSomething=True)
@@ -184,7 +184,7 @@ class DataParser_HouseScan(DataParser):
         if currentLevel and currentLevel.lower() == 'studio':
             return 'studio'
         elif currentLevel:
-            return re.sub('[^0-9]', '', currentLevel)
+            return re.sub('[^0-9.]', '', currentLevel)
         else:
             return default
         
@@ -235,8 +235,10 @@ class DataParser_DetailedScrape(DataParser):
 
     def extractAdditionalDetailedData(self, homeData: dict, associatedHome: OrderedDict):
         associatedHome['description'] = self.getAttribute(homeData, ['description', 'value'], default='No description found')
-        associatedHome['price_history'] = self.getAttribute(homeData, ['priceHistory'])
-        associatedHome['price_history'] = [returnedObjectWithPoppedAttributes(event,['__typename', 'source', 'mlsLogo', 'attributionSource', 'attributes']) for event in associatedHome['price_history']]
+        if priceHistory := self.getAttribute(homeData, ['priceHistory']):
+            associatedHome['price_history'] = [returnedObjectWithPoppedAttributes(event,['__typename', 'source', 'mlsLogo', 'attributionSource', 'attributes']) for event in priceHistory]
+        if not associatedHome['neighborhood']:
+            associatedHome['neighborhood'] = self.getAttribute(homeData, ['surroundings','name'])
         return associatedHome
     
     def extractFeaturesData(self, homeData: dict, associatedHome: OrderedDict):

@@ -7,7 +7,7 @@ import os
 
 
 # load_dotenv()
-# pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING'))
+# pool = DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING_TEMPLATE'))
 # with pool.managed_connection_cursor(disableAutoCommit=True) as cursor:
 #     truliaHouseListingDAO = TruliaHouseListingDAO(cursor)
 #     truliaHouseListingService = TruliaHouseListingService(truliaHouseListingDAO)

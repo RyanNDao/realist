@@ -41,6 +41,7 @@ VALUE_PLACEHOLDERS = ', '.join(f"%({col})s" for col in TRULIA_MAIN_TABLE_COLUMNS
 TRULIA_MAIN_TABLE_VALUES = f'({COLUMNS}) VALUES ({VALUE_PLACEHOLDERS})'
 
 TRULIA_MAIN_TABLE_NAME = 'trulia_house_listing'
+USERS_DETAIL_TABLE_NAME = 'details'
 
 TRULIA_UPDATE_QUERY = build_dynamic_update_query_template(
     dataColumns=TRULIA_MAIN_TABLE_COLUMNS,
