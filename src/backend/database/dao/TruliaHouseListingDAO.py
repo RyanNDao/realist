@@ -32,7 +32,7 @@ class TruliaHouseListingDAO():
             if not isinstance(truliaHouseListing, TruliaHouseListing):
                 raise AttributeError(f'truliaHouseListing is of type {type(truliaHouseListing)}, when it should be a TruliaHouseListing type!')
             cursor.execute(f'INSERT INTO {tableName} {columns};', truliaHouseListing.dict)
-            LOGGER.info(f'Inserted {cursor.statusmessage.split(" ")[-1]} house listing(s) in {tableName}!')
+            # LOGGER.info(f'Inserted {cursor.statusmessage.split(" ")[-1]} house listing(s) in {tableName}!')
 
     def getListingByKey(self, keyValue: str, keyName='key', tableName=TRULIA_MAIN_TABLE_NAME) -> dict:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:

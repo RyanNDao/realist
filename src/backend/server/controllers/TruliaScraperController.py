@@ -20,7 +20,6 @@ class TruliaScraperController():
             try:
                 normalizedHomeData = trulia_house_listing_service.createTruliaHouseListingDataObject(homeData)
                 trulia_house_listing_service.insertNormalizedDataIntoDb(normalizedHomeData)
-                LOGGER.warning(f'Scraped listing with the key: {normalizedHomeData.key}')
             except Exception as e:
                 LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {normalizedHomeData.dict}')
         return ResponseBuilder.buildSuccessResponse(truliaData.scrapedHomes, 'Scrape successful!')

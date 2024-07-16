@@ -89,7 +89,7 @@ class DataParser_HouseScan(DataParser):
             return None
         parsedHomeData = self.extractSupplementaryDataFromHome(homeData, copy.deepcopy(parsedHomeData))
         parsedHomeData = self.extractTrackingDataFromHome(homeData, copy.deepcopy(parsedHomeData))
-        LOGGER.info('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
+        # LOGGER.info('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
         return parsedHomeData
     
     def extractPrimaryDataFromHome(self, homeData: dict) -> OrderedDict | None: 

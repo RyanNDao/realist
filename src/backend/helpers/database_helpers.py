@@ -41,16 +41,14 @@ def generate_token(userUsername, userId, secret_key, tokenLifeInSeconds=60*60*1)
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if request.authorization:
-            bearerToken = request.authorization.token
-        elif request.cookies:
-            sessionToken = request.cookies.get('session_token')
-        
+        bearerToken = request.authorization.token if request.authorization else None
+        sessionToken = request.cookies.get('session_token') if request.cookies else None
+            
         if not (sessionToken or bearerToken):
             return ResponseBuilder.buildFailureResponse({'message': 'Token is missing'}, 403)
         try:
             token = sessionToken if sessionToken else bearerToken
-            jwt.decode(token,  os.getenv('JWT_SECRET_KEY'), algorithms=['HS256'])
+            jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=['HS256'])
         except jwt.exceptions.ExpiredSignatureError:
             return ResponseBuilder.buildFailureResponse({'message': 'Token has expired'}, 403)
         except:

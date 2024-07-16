@@ -39,7 +39,7 @@ class DatabaseConnectionPool:
                     connectionInstance.rollback()
         except psycopg.Error as psycopgError:
             LOGGER.error(f"A PostgreSQL error occurred when using a managed cursor: {psycopgError}")
-            raise CursorError(psycopgError, cause=psycopgError, type=errors.lookup(psycopgError.sqlstate))
+            raise CursorError(psycopgError, cause=psycopgError, type=errors.lookup(psycopgError.sqlstate) if psycopgError.sqlstate else None)
         except Exception as e:
             LOGGER.error(f"The error type <{type(e).__name__}> occurred when using a managed cursor: {e}")
             raise Exception(e)
