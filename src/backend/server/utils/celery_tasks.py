@@ -46,7 +46,9 @@ def revokeAllTasks(active=False, scheduled=True, reserved=True, purge=True):
 def triggerScrapeScheduling(self):
     LOGGER.info('Kicking off scheduler for scraping...')
     revokeAllTasks()
-    response = requests.get(f'{baseUrl}/api/schedule')
+    backendToken = generate_token('realistBackend', None, os.getenv('JWT_SECRET_KEY'), 60*10)
+    headers = {'Authorization': f'Bearer {backendToken}'}
+    response = requests.get(f'{baseUrl}/api/schedule', headers=headers)
     LOGGER.info(response)
 
 @celeryApp.task(bind=True, base=ManagedTask)
@@ -58,6 +60,6 @@ def scrapeZipcodeTask(self, zipcode):
     # url = f'{baseUrl}/api/test-error'
     headers = {'Authorization': f'Bearer {backendToken}'}
     requests.get(url, headers=headers)
-    LOGGER.info(f"Successfully scraped listings for zipcode: {zipcode}")
+    LOGGER.debug(f"Successfully scraped listings for zipcode: {zipcode}")
 
 

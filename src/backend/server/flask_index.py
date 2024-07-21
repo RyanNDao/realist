@@ -51,7 +51,7 @@ app = create_app()
 
 @app.route('/api/test-error',methods=['GET'])
 def test_error():
-    LOGGER.error('DINGUS')
+    LOGGER.error('This is a test error message')
     raise CursorError("Test error", cause="This is a test cause")
 
 def main():

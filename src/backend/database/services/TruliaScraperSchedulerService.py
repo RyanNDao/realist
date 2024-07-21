@@ -14,18 +14,18 @@ class TruliaScraperSchedulerService():
     @staticmethod
     def scheduleScrapesOfZipcodes(zipcodes):
         LOGGER.info('Scraping scheduling kicked off!!')
-        possibleZipCodes = max(len(zipcodes) - 1500, 10)  # Ensure at least 3 zipcodes
+        possibleZipCodes = max(len(zipcodes) - 15, 5)
         zipcodesToSelect = random.randint(3, possibleZipCodes)
         selectedZipcodes = random.sample(zipcodes, zipcodesToSelect)
         LOGGER.info(f'Chosen zipcodes: {selectedZipcodes}')
 
         for zipcode in selectedZipcodes:
-            timesToRunToday = random.randint(1, 3)  # Random number of times to run today
+            timesToRunToday = random.randint(1, 5) # random amount of times to run today
             nextRunTime = datetime.now(timezone.utc)
             for _ in range(timesToRunToday):
-                ms_delay = random.randint(60000, 21600000)  
+                ms_delay = random.randint(60000, 21600000) #r random delay between 1 minute to 6 hours
                 nextRunTime += timedelta(milliseconds=ms_delay)
-                if nextRunTime.day == datetime.now(timezone.utc).day:  # Check if it's still today
+                if nextRunTime.day == datetime.now(timezone.utc).day:
                     LOGGER.info(f"Scheduling 'scrape_function' for zipcode {zipcode} at {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')}")
                     scrapeZipcodeTask.apply_async(args=[zipcode], eta=nextRunTime)
                 else:
