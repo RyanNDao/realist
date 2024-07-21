@@ -23,6 +23,8 @@ Flask-Injector = "^0.15.0"
 PyJWT = "^2.8.0"
 Flask-JWT-Extended = "^4.6.0"
 gunicorn = "^22.0.0"
+celery = "^5.4.0"
+redis = "^5.0.7"
 APScheduler = "^3.10.4"
 SQLAlchemy = "^2.0.31"
 

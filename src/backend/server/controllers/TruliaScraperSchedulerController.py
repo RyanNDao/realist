@@ -26,6 +26,6 @@ class TruliaScraperSchedulerController():
     @inject
     def schedule_api(trulia_scraper_scheduler_service: TruliaScraperSchedulerService):
         zipcodes_list = PHILADELPHIA_ZIP_CODES
-        trulia_scraper_scheduler_service.scheduleTasks(zipcodes_list)
+        trulia_scraper_scheduler_service.scheduleScrapesOfZipcodes(zipcodes_list)
         return ResponseBuilder.buildSuccessResponse({}, 'Task scheduling successful!')
         

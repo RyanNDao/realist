@@ -8,13 +8,14 @@
 *.json
 *.xlsx
 *.csv
-
+*.log
 /.venv
-
 **/.env
 **/build
 **/node_modules
 **/dist
+celerybeat-schedule
+
 ## EXCLUSIONS ##
 !**/tests/data/*.json
 !**/package.json

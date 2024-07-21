@@ -5,7 +5,6 @@ from backend.database.services.TruliaScraperSchedulerService import TruliaScrape
 from backend.exceptions import CursorError
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
-from backend.server.utils.Scheduler import scheduler
 from dotenv import load_dotenv
 from backend.server.controllers import UserController, TruliaScraperController, TruliaScraperSchedulerController
 from flask_injector import FlaskInjector
@@ -14,12 +13,14 @@ from backend.database.dao.UserDAO import UserDAO
 from backend.database.services.UserService import UserService
 from backend.server.configurations import exception_handling_config
 import logging
+from src.backend.server.configurations.celery_conf import initCelery
+
 load_dotenv()
 LOGGER = logging.getLogger(__name__)
 
 
-def create_app() -> Flask:
 
+def create_app() -> Flask:
     def configure_injections(binder: Binder):
         user_dao = UserDAO(app.db_pool['users'])
         user_service = UserService(user_dao)
@@ -41,27 +42,20 @@ def create_app() -> Flask:
     app.register_blueprint(exception_handling_config.exceptionHandlerBp)
 
     FlaskInjector(app=app, modules=[configure_injections])
-
-    if not hasattr(app, 'scheduler_started'):
-        appScheduler = scheduler
-        appScheduler.remove_all_jobs()
-        appScheduler.start()
-        app.scheduler = appScheduler
-        app.scheduler_started = True 
-
+    initCelery(app)
     return app
 
 app = create_app()
 
 
-@app.route('/api/test-error')
+
+@app.route('/api/test-error',methods=['GET'])
 def test_error():
+    LOGGER.error('DINGUS')
     raise CursorError("Test error", cause="This is a test cause")
 
 def main():
-    try:
-        app.run(debug=True, port=8000, use_reloader=False)
-    finally:
-        app.scheduler.shutdown()
+    app.run(debug=True, port=8000, use_reloader=False)
+
 if __name__ == "__main__":
     main()

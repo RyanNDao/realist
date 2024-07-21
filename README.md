@@ -47,14 +47,22 @@ This command executes all tests written for the Realist application, ensuring th
 ## Deployment
 For deployment to a production server, make sure that the instance is running Nginx
 
-
-
 ### Launching The Backend
 Use the following command, where recommended number of workers is (# of cores * 2 + 1). At least 5 workers are recommended. 
 ``` bash
 poetry run gunicorn -w {workers} "src.backend.server.flask_index:app" --bind 0.0.0.0:8000
 ```
 
+### Starting the Scheduler
+The scheduler uses Celery to schedule scraping. It should only be ran in production and not while developing. To start the scheduler,
+run the script
+``` bash
+sh scripts/start_celery_scheduler.sh
+```
+To stop the scheduler
+``` bash
+sh scripts/stop_celery_scheduler.sh
+```
 ### Building the Frontend Static Files
 Use the command to generate the static files. The files will be generated in /src/frontend/realist-app/dist
 ``` bash

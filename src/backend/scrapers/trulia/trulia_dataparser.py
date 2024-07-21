@@ -81,7 +81,10 @@ class DataParser_HouseScan(DataParser):
             if parsedHomeData:
                 scrapedHomes[parsedHomeData['url']] = parsedHomeData
                 self.urls.append(parsedHomeData['url'])
-        LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
+        if len(scrapedHomes) == 0:
+            LOGGER.error(f'Scrape was empty! Here was the scraped result: {listingsData}')
+        else: 
+            LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
         return scrapedHomes
     
     def parseHomeData(self, homeData) -> OrderedDict:

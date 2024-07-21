@@ -58,11 +58,25 @@ class TruliaHouseListingService():
         return dataParserDetailedScrape
     
 
-    def insertNormalizedDataIntoDb(self, truliaListingObject: TruliaHouseListing):
-        if self._truliaHouseListingDAO.getListingByKey(truliaListingObject.key):
-            self._truliaHouseListingDAO.updateListingEntryInTable(truliaListingObject)
+    def insertNormalizedDataIntoDb(self, truliaNormalizedDataList: list[TruliaHouseListing], searchType: str):
+        if searchType.upper() == 'FOR_SALE':
+            existingData = self._truliaHouseListingDAO.getAllListings()
+
+        elif searchType.upper() == 'FOR_RENT':
+            existingData = self._truliaHouseListingDAO.getAllRentals()
         else:
-            self._truliaHouseListingDAO.insertListingIntoTable(truliaListingObject)
+            raise ValueError(f'Invalid search type: {searchType.upper()}')
+        dataIndex = {entry['key']: entry for entry in existingData}
+        scrapedDataToInsert = []
+        scrapedDataToUpdate = []
+        for truliaDataObject in truliaNormalizedDataList:
+            if dataIndex.get(truliaDataObject.key):
+                scrapedDataToUpdate.append(truliaDataObject)
+            else:
+                scrapedDataToInsert.append(truliaDataObject)
+        self._truliaHouseListingDAO.insertMultipleListingsIntoTable(scrapedDataToInsert)
+        self._truliaHouseListingDAO.updateMultipleListingsInTable(scrapedDataToUpdate)
+
 
 
     def fetchListingsData(self):
