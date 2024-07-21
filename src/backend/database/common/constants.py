@@ -23,7 +23,7 @@ TRULIA_MAIN_TABLE_COLUMNS = {
     'trulia_listing_id': {'setToNullOnNonUpdate': True},
     'parcel_number': {'setToNullOnNonUpdate': False},
     'date_listed_or_sold': {'setToNullOnNonUpdate': True},
-    'days_on_market': {'setToNullOnNonUpdate': True},
+    'date_scraped': {'setToNullOnNonUpdate': True},
     'listing_status': {'setToNullOnNonUpdate': True},
     'neighborhood': {'setToNullOnNonUpdate': False},
     'property_type': {'setToNullOnNonUpdate': False},

@@ -45,13 +45,13 @@ def token_required(f):
         sessionToken = request.cookies.get('session_token') if request.cookies else None
             
         if not (sessionToken or bearerToken):
-            return ResponseBuilder.buildFailureResponse({'message': 'Token is missing'}, 403)
+            return ResponseBuilder.buildFailureResponse('Token is missing', 403)
         try:
             token = sessionToken if sessionToken else bearerToken
             jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=['HS256'])
         except jwt.exceptions.ExpiredSignatureError:
-            return ResponseBuilder.buildFailureResponse({'message': 'Token has expired'}, 403)
+            return ResponseBuilder.buildFailureResponse('Token has expired', 403)
         except:
-            return ResponseBuilder.buildFailureResponse({'message': 'Token is invalid'}, 403)
+            return ResponseBuilder.buildFailureResponse('Token is invalid', 403)
         return f(*args, **kwargs)
     return decorated

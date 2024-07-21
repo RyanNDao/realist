@@ -31,7 +31,7 @@ class TruliaHouseListing:
     trulia_listing_id: str = ModelAttribute(str, optional=True)
     parcel_number: str = ModelAttribute(str, optional=True)
     date_listed_or_sold: datetime = ModelAttribute((datetime, str), optional=True)
-    days_on_market: int = ModelAttribute((int, str), optional=True)
+    date_scraped: datetime = ModelAttribute((datetime, str), optional=True)
     listing_status: str = ModelAttribute(str, optional=True)
     neighborhood: str = ModelAttribute(str, optional=True)
     property_type: str = ModelAttribute(str, optional=True)

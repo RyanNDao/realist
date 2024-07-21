@@ -1,10 +1,11 @@
 import json
 import logging
+import pytz
 from backend.helpers.common_helpers import returnedObjectWithPoppedAttributes
 import copy
 from collections import OrderedDict
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Callable
 from backend.exceptions import DataParsingError
 
@@ -104,6 +105,7 @@ class DataParser_HouseScan(DataParser):
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
             extractedPrimaryData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'], mustReturnSomething=True)
+            extractedPrimaryData['date_scraped'] = datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d')
             return extractedPrimaryData
         except AttributeError:
             if location:= homeData.get('location', ''):
@@ -270,11 +272,6 @@ class DataParser_DetailedScrape(DataParser):
                 ('formattedName', 'Exterior Features', 'categories'),
                 ('formattedName', 'Parking & Garage', 'attributes'),
                 ('formattedName', 'Parking', 'formattedValue')
-            ], None, parserFunction=self.getFeature)
-            associatedHome['days_on_market'] = self.getAttribute(featuresData, [
-                'categories', 
-                ('formattedName', 'Days on Market', 'attributes'),
-                ('formattedName', 'Days on Market', 'formattedValue')
             ], None, parserFunction=self.getFeature)
             associatedHome['year_built'] = self.getAttribute(featuresData, [
                 'categories', 
