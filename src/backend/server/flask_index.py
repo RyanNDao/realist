@@ -1,22 +1,26 @@
 from flask import Flask
 from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
 from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
+from backend.database.services.TruliaScraperSchedulerService import TruliaScraperSchedulerService
 from backend.exceptions import CursorError
-from backend.server.utils.ResponseBuilder import ResponseBuilder
-from flask_login import LoginManager
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
 from dotenv import load_dotenv
-from backend.server.controllers import UserController, TruliaScraperController
+from backend.server.controllers import UserController, TruliaScraperController, TruliaScraperSchedulerController
 from flask_injector import FlaskInjector
 from injector import singleton, Binder
 from backend.database.dao.UserDAO import UserDAO
 from backend.database.services.UserService import UserService
 from backend.server.configurations import exception_handling_config
+import logging
+from src.backend.server.configurations.celery_conf import initCelery
+
 load_dotenv()
+LOGGER = logging.getLogger(__name__)
+
+
 
 def create_app() -> Flask:
-
     def configure_injections(binder: Binder):
         user_dao = UserDAO(app.db_pool['users'])
         user_service = UserService(user_dao)
@@ -24,6 +28,8 @@ def create_app() -> Flask:
         trulia_house_listing_dao = TruliaHouseListingDAO(app.db_pool['home_data'])
         trulia_house_listing_service = TruliaHouseListingService(trulia_house_listing_dao)
         binder.bind(TruliaHouseListingService, to=trulia_house_listing_service, scope=singleton)
+        binder.bind(TruliaScraperSchedulerService, to=TruliaScraperSchedulerService(), scope=singleton)
+
     
     app = Flask(__name__)
     app.db_pool = {
@@ -32,33 +38,24 @@ def create_app() -> Flask:
     }
     app.register_blueprint(UserController.userControllerBp, url_prefix='/api/user')
     app.register_blueprint(TruliaScraperController.truliaScraperBp, url_prefix='/api/trulia')
+    app.register_blueprint(TruliaScraperSchedulerController.truliaScraperSchedulerBp, url_prefix='/api')
     app.register_blueprint(exception_handling_config.exceptionHandlerBp)
 
     FlaskInjector(app=app, modules=[configure_injections])
-
+    initCelery(app)
     return app
 
 app = create_app()
 
 
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-@app.route("/api")
-def hello_world():
-    return ResponseBuilder.buildSuccessResponse({"world" :"hello"}, 'Hello world successful!')
-
-@app.route('/api/create-user')
-def create_user():
-    pass
-
-@app.route('/api/test-error')
+@app.route('/api/test-error',methods=['GET'])
 def test_error():
+    LOGGER.error('This is a test error message')
     raise CursorError("Test error", cause="This is a test cause")
 
 def main():
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=8000, use_reloader=False)
 
 if __name__ == "__main__":
     main()

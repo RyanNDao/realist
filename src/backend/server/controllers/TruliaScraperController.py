@@ -15,15 +15,17 @@ class TruliaScraperController():
     @token_required
     @inject
     def scrapeTrulia(trulia_house_listing_service: TruliaHouseListingService):
-        truliaData = trulia_house_listing_service.scrapeTruliaData(**dict(request.args.items()))
+        requestParams = dict(request.args.items())
+        truliaData = trulia_house_listing_service.scrapeTruliaData(**requestParams)
+        scrapedEntries = []
         for homeData in truliaData.scrapedHomes.values():
             try:
-                normalizedHomeData = trulia_house_listing_service.createTruliaHouseListingDataObject(homeData)
-                trulia_house_listing_service.insertNormalizedDataIntoDb(normalizedHomeData)
-                LOGGER.warning(f'Scraped listing with the key: {normalizedHomeData.key}')
+                scrapedEntries.append(trulia_house_listing_service.createTruliaHouseListingDataObject(homeData))
             except Exception as e:
-                LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {normalizedHomeData.dict}')
+                LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {homeData}')
+        trulia_house_listing_service.insertNormalizedDataIntoDb(scrapedEntries, requestParams.get('searchType'))
         return ResponseBuilder.buildSuccessResponse(truliaData.scrapedHomes, 'Scrape successful!')
+
     
     @truliaScraperBp.route('/get-listings', methods=['GET'])
     @token_required

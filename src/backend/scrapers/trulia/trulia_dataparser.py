@@ -1,10 +1,11 @@
 import json
 import logging
+import pytz
 from backend.helpers.common_helpers import returnedObjectWithPoppedAttributes
 import copy
 from collections import OrderedDict
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Callable
 from backend.exceptions import DataParsingError
 
@@ -81,7 +82,10 @@ class DataParser_HouseScan(DataParser):
             if parsedHomeData:
                 scrapedHomes[parsedHomeData['url']] = parsedHomeData
                 self.urls.append(parsedHomeData['url'])
-        LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
+        if len(scrapedHomes) == 0:
+            LOGGER.error(f'Scrape was empty! Here was the scraped result: {listingsData}')
+        else: 
+            LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
         return scrapedHomes
     
     def parseHomeData(self, homeData) -> OrderedDict:
@@ -89,7 +93,7 @@ class DataParser_HouseScan(DataParser):
             return None
         parsedHomeData = self.extractSupplementaryDataFromHome(homeData, copy.deepcopy(parsedHomeData))
         parsedHomeData = self.extractTrackingDataFromHome(homeData, copy.deepcopy(parsedHomeData))
-        LOGGER.info('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
+        LOGGER.debug('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
         return parsedHomeData
     
     def extractPrimaryDataFromHome(self, homeData: dict) -> OrderedDict | None: 
@@ -101,6 +105,7 @@ class DataParser_HouseScan(DataParser):
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
             extractedPrimaryData['zip'] = self.getAttribute(homeData, ['location', 'zipCode'], mustReturnSomething=True)
+            extractedPrimaryData['date_scraped'] = datetime.now(pytz.timezone('America/New_York')).strftime('%Y-%m-%d')
             return extractedPrimaryData
         except AttributeError:
             if location:= homeData.get('location', ''):
@@ -267,11 +272,6 @@ class DataParser_DetailedScrape(DataParser):
                 ('formattedName', 'Exterior Features', 'categories'),
                 ('formattedName', 'Parking & Garage', 'attributes'),
                 ('formattedName', 'Parking', 'formattedValue')
-            ], None, parserFunction=self.getFeature)
-            associatedHome['days_on_market'] = self.getAttribute(featuresData, [
-                'categories', 
-                ('formattedName', 'Days on Market', 'attributes'),
-                ('formattedName', 'Days on Market', 'formattedValue')
             ], None, parserFunction=self.getFeature)
             associatedHome['year_built'] = self.getAttribute(featuresData, [
                 'categories', 

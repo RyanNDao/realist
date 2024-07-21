@@ -1,5 +1,4 @@
 from backend.database.common.constants import USERS_DETAIL_TABLE_NAME
-from backend.database.models.User import User
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 
 class UserDAO():

@@ -20,12 +20,22 @@ class PayloadGenerator_HouseScan():
         self.payload = copy.deepcopy(constants.GRAPHQL_HOUSE_SCAN_PAYLOAD_TEMPLATE)
         self.queryVariables = copy.deepcopy(constants.TRULIA_HOUSE_SCAN_DEFAULT_QUERY_VARIABLES)
         self.headers = copy.deepcopy(constants.TRULIA_HEADERS)
+        location = self.queryVariables.get('searchDetails', {}).get('location', {})
+        if 'zips' in kwargs:
+            zipList = kwargs['zips'].split(',')
+            for zip in zipList:
+                location['zips'].append(zip)
+            kwargs.pop('zips')
+        else:
+            location['cities'].append({
+                "city": "Philadelphia",
+                "state": "PA"
+            })
         for attribute in kwargs:
             if attribute in queryVariableMapper and type(kwargs[attribute]) is not queryVariableMapper[attribute]:
                 castType = queryVariableMapper[attribute]
                 LOGGER.warning(f'Casting {attribute} from {type(attribute)} to {queryVariableMapper[attribute]}')
                 kwargs[attribute] = castType(kwargs[attribute])
-                
             LOGGER.info('Modifying the "{attribute}" attribute to <{newValue}> if the key exists'.format(attribute=attribute, newValue=kwargs[attribute]))
             common_helpers.editQueryVariables(attribute, kwargs[attribute], self.queryVariables)
         self.fillPayloadTemplate()

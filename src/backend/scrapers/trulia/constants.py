@@ -20,12 +20,8 @@ TRULIA_HOUSE_SCAN_DEFAULT_QUERY_VARIABLES = {
     "searchDetails": {
         "searchType": "FOR_SALE",
         "location": {
-            "cities": [
-                {
-                    "city": "Philadelphia",
-                    "state": "PA"
-                }
-            ],
+            "zips": [],
+            "cities": [],
         },
         "filters": {
             "sort": {

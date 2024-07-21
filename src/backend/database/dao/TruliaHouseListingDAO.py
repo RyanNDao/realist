@@ -32,7 +32,14 @@ class TruliaHouseListingDAO():
             if not isinstance(truliaHouseListing, TruliaHouseListing):
                 raise AttributeError(f'truliaHouseListing is of type {type(truliaHouseListing)}, when it should be a TruliaHouseListing type!')
             cursor.execute(f'INSERT INTO {tableName} {columns};', truliaHouseListing.dict)
-            LOGGER.info(f'Inserted {cursor.statusmessage.split(" ")[-1]} house listing(s) in {tableName}!')
+            # LOGGER.info(f'Inserted {cursor.statusmessage.split(" ")[-1]} house listing(s) in {tableName}!')
+
+    def insertMultipleListingsIntoTable(self, truliaHouseListingList: list[TruliaHouseListing], columns=TRULIA_MAIN_TABLE_VALUES, tableName=TRULIA_MAIN_TABLE_NAME) -> None:
+        with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
+            if not all([isinstance(entry, TruliaHouseListing) for entry in truliaHouseListingList]):
+                raise AttributeError(f'All entries must be of TruliaHouseListing type when trying to insert multiple listings into DB table {tableName}')
+            cursor.executemany(f'INSERT INTO {tableName} {columns};', [entry.dict for entry in truliaHouseListingList])
+            LOGGER.info(f'Total inserted rows: {cursor.rowcount}')
 
     def getListingByKey(self, keyValue: str, keyName='key', tableName=TRULIA_MAIN_TABLE_NAME) -> dict:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
@@ -69,5 +76,14 @@ class TruliaHouseListingDAO():
             if updatedListing is None:
                 LOGGER.warning(f'No row with the key "{keyName}" was found while trying to delete!')
             else:
-                LOGGER.info(f'Updated row from {tableName} with the key: "{keyName}"')
+                LOGGER.info(f'Updated row from {tableName} with the key: "{updatedListing.get("keyName")}"')
             return updatedListing
+        
+    def updateMultipleListingsInTable(self, truliaHouseListingList: list[TruliaHouseListing], tableName=TRULIA_MAIN_TABLE_NAME, keyName = 'key'):
+        with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
+            if not all([isinstance(entry, TruliaHouseListing) for entry in truliaHouseListingList]):
+                raise AttributeError(f'All entries must be of TruliaHouseListing type when trying to update multiple listings into DB table {tableName}')
+            setQueryTemplate = build_dynamic_update_query_template(TRULIA_MAIN_TABLE_COLUMNS, keyName=keyName)
+            setQueryTemplate = setQueryTemplate.format(tableName=tableName, keyName=keyName)
+            cursor.executemany(setQueryTemplate, [entry.dict for entry in truliaHouseListingList])
+            LOGGER.info(f'Total updated rows: {cursor.rowcount}')
