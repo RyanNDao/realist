@@ -1,7 +1,5 @@
 import os
 import random
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from backend.helpers.database_helpers import generate_token
 from backend.server.utils.ManagedCeleryTask import ManagedTask
 from src.backend.server.configurations.celery_conf import celeryApp, inspector

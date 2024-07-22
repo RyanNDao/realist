@@ -8,7 +8,7 @@ Realist is a tool designed to assist real estate buyers by analyzing property li
 To set up the project environment, follow these steps:
 
 ### Prerequisites
-- Ensure Python 3.11 and [Poetry](https://python-poetry.org/docs/) are installed on your machine.
+- Ensure Python 3.11, [Poetry](https://python-poetry.org/docs/), Celery, and Redis Server are installed on your machine.
 
 ### Setup
 1. Clone the repository:
@@ -19,6 +19,11 @@ To set up the project environment, follow these steps:
 2. Install dependencies
     ```bash
     poetry install
+    ```
+3. Turn on Redis-Server
+    ```bash
+    redis-server
+
     ```
 
 ## Starting the Server

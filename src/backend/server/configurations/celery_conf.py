@@ -2,8 +2,10 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 import logging
-LOGGER = logging.getLogger(__name__)
+from dotenv import load_dotenv
+load_dotenv()
 
+LOGGER = logging.getLogger(__name__)
 
 def initCelery(app=None) -> Celery:
     celery = Celery(__name__, 
@@ -18,6 +20,8 @@ def initCelery(app=None) -> Celery:
                 with app.app_context():
                     return self.run(*args, **kwargs)
         celery.Task = ContextTask
+        celery.control.purge()
+
     celery.conf.timezone = 'America/New_York' 
     celery.conf.beat_schedule = {
         'trigger_schedule_every_midnight': {
@@ -25,7 +29,6 @@ def initCelery(app=None) -> Celery:
             'schedule': crontab(hour=0, minute=0)  # Executes at midnight New York time
     }
 }
-    celery.control.purge()
     return celery
 
 celeryApp = initCelery()
