@@ -1,10 +1,7 @@
-import { Container, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton, DrawerHeader, DrawerBody, Input, DrawerFooter, Button, Tabs, TabList, Tab, TabPanels, TabPanel } from "@chakra-ui/react";
+import { Container, Drawer, DrawerOverlay, DrawerContent, DrawerCloseButton } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { RegistrationInputData, UserRegistrationForm } from "../../form_components/UserRegistrationForm"
-import { LoginInputData, UserLoginForm } from "../../form_components/UserLoginForm";
-import makeRequest from "../../helpers/apiHelper";
-import { convertToMap } from "../../helpers/common";
-import { MessageBox } from "../MessageBox/MessageBox";
+import { RegistrationInputData, UserRegistrationForm } from "../form_components/UserRegistrationForm"
+import { LoginInputData, UserLoginForm } from "../form_components/UserLoginForm";
 import { ApiSuccessResponse } from "../../helpers/globalInterfaces";
 import { useUser } from "../../hooks/useUser";
 import { AuthenticationTabs } from "./AuthenticationTabs";

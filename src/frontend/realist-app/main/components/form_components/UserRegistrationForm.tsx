@@ -1,4 +1,4 @@
-import { Center, FormControl, FormLabel, VStack, Input, FormErrorMessage, Box } from "@chakra-ui/react";
+import { VStack, Box } from "@chakra-ui/react";
 import React, { ChangeEvent, useState } from "react";
 
 export interface RegistrationInputData {

@@ -6,19 +6,22 @@ import "ag-grid-community/styles/ag-theme-quartz.css"; // Optional Theme applied
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { ColDef } from "ag-grid-community";
 import "../agGridTable.css"
+import { formatDbDate, formatNumberToMoney } from "../../../helpers/common";
 
-interface TruliaListingsTableProps {
+interface TruliaDataTableProps {
     isFetching: boolean
+    onListingClick: any;
     listings?: ApiTruliaListingResponse[];
-
 }
 
-export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTableProps){
+export function TruliaDataTable ({isFetching, onListingClick, listings}: TruliaDataTableProps){
+    
+    
     console.log('trulialisting table loading', listings)
     const columnsData: ColDef<TruliaListingSummary>[] = [
         { headerName: "Address", field: "address" },
         { headerName: "Neighborhood", field: "neighborhood" },
-        { headerName: "Asking Price", field: "askingPrice" },
+        { headerName: "Asking Price", field: "askingPrice", valueFormatter: (listing) => formatNumberToMoney(listing.value) },
         { headerName: "Bedrooms", field: "bedrooms" },
         { headerName: "Bathrooms", field: "bathrooms" },
         { headerName: "Floor Sqft", field: "floorSqft" },
@@ -29,15 +32,19 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
     ]
 
     const [rowsData, setRowsData] = useState<TruliaListingSummary[]>([])
+    const [fullRowsData, setFullRowsData] = useState<TruliaListingFull[]>([])
     
     useEffect(()=>{
         if (listings){
             let listingsSummaryList: TruliaListingSummary[] = []
+            let listingsFullList: TruliaListingFull[] = []
             for (let listing of listings){
                 let listingsFull = convertApiResponseToTruliaListingObject(listing);
+                listingsFullList.push(listingsFull)
                 let listingsSummary = summarizeListing(listingsFull);
                 listingsSummaryList.push(listingsSummary)
             }
+            setFullRowsData(listingsFullList)
             setRowsData(listingsSummaryList)
         }
     }, [listings])
@@ -62,6 +69,7 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
         }
         
         let listingFull: TruliaListingFull = {
+            key: apiListingObject.key,
             address: apiListingObject.address,
             askingPrice: apiListingObject.asking_price,
             bedrooms: apiListingObject.bedrooms,
@@ -74,7 +82,8 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
             propertySubType: apiListingObject.property_subtype,
             yearBuilt: apiListingObject.year_built,
             yearRenovated: apiListingObject.year_renovated,
-            dateListedOrSold: apiListingObject.date_listed_or_sold,
+            dateListedOrSold: apiListingObject.date_listed_or_sold ? formatDbDate(apiListingObject.date_listed_or_sold) : null,
+            dateScraped: formatDbDate(apiListingObject.date_scraped),
             architecture: apiListingObject.architecture,
             basement: apiListingObject.basement,
             condition: apiListingObject.condition,
@@ -83,6 +92,7 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
             structureType: apiListingObject.structure_type,
             lotSqft: apiListingObject.lot_sqft,
             parking: apiListingObject.parking,
+            trulia_url: apiListingObject.trulia_url,
             priceHistory: listingObjectPriceHistoryList,
             mlsListingId: apiListingObject.mls_listing_id,
             description: apiListingObject.description,
@@ -93,6 +103,7 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
 
     const summarizeListing = (listing: TruliaListingFull) => {
         let listingSummary: TruliaListingSummary = {
+            key: listing.key,
             address: listing.address,
             askingPrice: listing.askingPrice,
             bedrooms: listing.bedrooms,
@@ -120,6 +131,7 @@ export function TruliaListingsTable ({isFetching, listings}: TruliaListingsTable
                             pagination={true}
                             paginationPageSize={200}
                             paginationPageSizeSelector={[50, 200, 500, 1000]}
+                            onRowClicked={(e) => {onListingClick(e, fullRowsData)}}
                         />
                     </Box>
                     : <Box flex="1" alignSelf="center" justifySelf="center">
