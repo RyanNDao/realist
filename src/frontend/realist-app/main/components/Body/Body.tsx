@@ -13,7 +13,7 @@ export function Body(){
         setTabIndex(index);
     };
     const responseOrientation = useBreakpointValue<'vertical' | 'horizontal' | undefined>(
-        { base: 'horizontal', md: 'vertical' }
+        { base: 'horizontal', md: 'vertical' }, { ssr: false }
     );
 
     return (

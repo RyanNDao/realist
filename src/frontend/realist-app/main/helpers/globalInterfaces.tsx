@@ -21,12 +21,12 @@ export interface ApiTruliaListingResponse {
     city: string | null;
     condition: string | null;
     date_listed_or_sold: string | null;
-    days_on_market: string | null;
+    date_scraped: string;
     description: string | null;
     floor_sqft: number | null;
     foundation: string | null;
     house_material: string | null;
-    key: string | null;
+    key: string;
     listing_status: string | null;
     location: string | null;
     lot_sqft: number | null;
@@ -71,6 +71,7 @@ export interface UserData {
 }
 
 export interface TruliaListingSummary{
+    key: string;
     address: string;
     askingPrice: number;
     bedrooms: string | null;
@@ -84,6 +85,7 @@ export interface TruliaListingSummary{
 }
 
 export interface TruliaListingFull{
+    key: string;
     address: string;
     askingPrice: number;
     bedrooms: string | null;
@@ -97,6 +99,7 @@ export interface TruliaListingFull{
     yearBuilt: number | null;
     yearRenovated: number | null;
     dateListedOrSold: string | null;
+    dateScraped: string;
     architecture: string | null;
     basement: string | null;
     condition: string | null;
@@ -105,6 +108,7 @@ export interface TruliaListingFull{
     structureType: string | null;
     lotSqft: number | null;
     parking: string | null;
+    trulia_url: string | null;
     priceHistory: PriceHistory[] | null;
     mlsListingId: string | null;
     description: string | null;
@@ -120,4 +124,28 @@ export interface PriceHistory {
         priceChangePercent: number;
         priceChangeValue: string;
     }
+}
+
+export interface TruliaListingModalOverview {
+    askingPrice: number | string;
+    bedrooms: string | null;
+    bathrooms: string | null;
+    neighborhood: string | null;
+    floorSqft: number | null;
+    lotSqft: number | null;
+    propertyType: string | null;
+    propertySubType: string | null;
+    yearBuilt: number | null;
+    yearRenovated: number | null;
+    condition: string | null;
+}
+
+export interface TruliaListingModalAdditionalInfo {
+    dateListedOrSold: string | null;
+    architecture: string | null;
+    basement: string | null;
+    foundation: string| null;
+    houseMaterial: string | null;
+    structureType: string | null;
+    parking: string | null;
 }

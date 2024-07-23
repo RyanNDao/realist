@@ -1,7 +1,7 @@
 import { Button, DrawerBody, DrawerFooter, DrawerHeader, Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react"
 import React from "react"
-import { UserLoginForm, LoginInputData } from "../../form_components/UserLoginForm"
-import { UserRegistrationForm, RegistrationInputData } from "../../form_components/UserRegistrationForm"
+import { UserLoginForm, LoginInputData } from "../form_components/UserLoginForm"
+import { UserRegistrationForm, RegistrationInputData } from "../form_components/UserRegistrationForm"
 import { MessageBox } from "../MessageBox/MessageBox"
 import { ProfileFormData } from "./ProfileSidebar"
 

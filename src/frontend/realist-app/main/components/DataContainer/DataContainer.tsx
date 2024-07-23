@@ -1,24 +1,34 @@
-import { Flex, Center, Button, Icon, Box, Select } from "@chakra-ui/react";
+import { Flex, Select } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { TruliaListingsTable } from "../table_components/TruliaListingsTable/TruliaListingsTable";
-import makeRequest from "../../helpers/apiHelper";
-import { ApiTruliaListingResponse } from "../../helpers/globalInterfaces";
-import { TruliaRentalsTable } from "../table_components/TruliaRentalsTable/TruliaRentalsTable";
+import { TruliaDataTable } from "../table_components/TruliaDataTable/TruliaDataTable";
+import { ApiTruliaListingResponse, TruliaListingFull, TruliaListingSummary } from "../../helpers/globalInterfaces";
+import { TruliaDataModal } from "../TruliaDataModal/TruliaDataModal";
+import { RowClickedEvent } from "ag-grid-community"
 
-export function DataContainer() {
+interface DataContainerProps{
+    isFetching: boolean,
+    rentalData?: ApiTruliaListingResponse[],
+    listingsData?: ApiTruliaListingResponse[],
+}
+
+
+export function DataContainer({isFetching, rentalData, listingsData}: DataContainerProps) {
     
-    const [rentalData, setRentalData] = useState<ApiTruliaListingResponse[] | undefined>(undefined);
-    const [listingsData, setListingsData] = useState<ApiTruliaListingResponse[] | undefined>(undefined);
     const [tableDataType, setTableDataType ] = useState<"listings" | "rentals" | "sold">("listings");
-    const [isFetching, setIsFetching] = useState(false);
+    const [isDataModalOpen, setIsDataModalOpen] = useState(true);
+    const [activeListing, setActiveListing] = useState<TruliaListingFull | undefined>(undefined)
 
-    async function getListingsFromDatabase(){
-        return await makeRequest('api/trulia/get-listings', 'GET');
-        
-    }
+    
 
-    async function getRentalsFromDatabase(){
-        return await makeRequest('api/trulia/get-rentals', 'GET');
+    const onTableListingClick = (e: RowClickedEvent, fullListingsData: TruliaListingFull[]) => {
+        let rowData = e.data as TruliaListingSummary
+        let foundFullListing = fullListingsData.find((listing) => {return listing.key === rowData.key})
+        if (foundFullListing){
+            setIsDataModalOpen(true);
+            setActiveListing(foundFullListing);
+        } else {
+            console.error(`Unexpected error where listing with key ${rowData?.key} was not found in listings data!`)
+        }
     }
 
     const onSelectTableDataTypeChange = (event: any) => {
@@ -27,35 +37,7 @@ export function DataContainer() {
         console.log('Selected option:', dataType);
     }
 
-    useEffect(()=>{
-        async function fetchData() {
-            console.log('Fetching data....')
-            try {
-                setIsFetching(true);
-                const [listingsResponse, rentalResponse] = await Promise.all(
-                    [
-                        getListingsFromDatabase(), 
-                        getRentalsFromDatabase()
-                    ]
-                )
-                setListingsData(listingsResponse.data)
-                setRentalData(rentalResponse.data)
-            } catch {
-
-            } finally {
-                setIsFetching(false)
-            }
-
-            console.log('Rental/listings data has been fetched!')
-        }
-        console.log('Scraper container component built')
-        fetchData();
-    }, [])
-
-
-    useEffect(() => {
-        console.log('Updated listing and rental data:', listingsData, rentalData);
-    }, [listingsData, rentalData]);
+    
     
     return (
         <Flex flexDirection="column" height="100%" justifyContent="space-between" gap="10px">
@@ -66,15 +48,24 @@ export function DataContainer() {
                     <option value='sold'>Sold</option>
                 </Select>
             }
+            {activeListing &&
+                <TruliaDataModal
+                    isOpen={isDataModalOpen}
+                    setIsOpen={setIsDataModalOpen}
+                    activeListing={activeListing}
+                />
+            }
             { tableDataType === "listings" &&
-                <TruliaListingsTable
+                <TruliaDataTable
                     isFetching={isFetching}
+                    onListingClick={onTableListingClick}
                     listings={listingsData}
                 />
             }
             { tableDataType === "rentals" &&
-                <TruliaRentalsTable
+                <TruliaDataTable
                     isFetching={isFetching}
+                    onListingClick={onTableListingClick}
                     listings={rentalData}
                 />
             }
