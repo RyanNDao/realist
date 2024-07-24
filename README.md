@@ -55,7 +55,7 @@ For deployment to a production server, make sure that the instance is running Ng
 ### Launching The Backend
 Use the following command, where recommended number of workers is (# of cores * 2 + 1). At least 5 workers are recommended. 
 ``` bash
-poetry run gunicorn -w {workers} "src.backend.server.flask_index:app" --bind 0.0.0.0:8000
+poetry run gunicorn -w {workers} "src.backend.server.flask_index:app" --bind 0.0.0.0:8000 --log-file ./gunicorn.log
 ```
 
 ### Starting the Scheduler

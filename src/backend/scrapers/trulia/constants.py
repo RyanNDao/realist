@@ -1,14 +1,22 @@
-from string import Template
 from dotenv import load_dotenv
 import os
+import random
 
 load_dotenv()
 
-# Trulia uses pxvid cookie (perimeter X) to validate requests
+USER_AGENTS_LIST = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0'
+]
+
 TRULIA_HEADERS = {
     'Content-Type': 'application/json',
-    'Cookie': os.getenv('TRULIA_COOKIE', '')
-    ,'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0'
+    'Cookie': os.getenv('TRULIA_COOKIE', ''),
+    'User-Agent': os.getenv('USER_AGENT', None) if os.getenv('USER_AGENT')
+    	else random.choice(USER_AGENTS_LIST)
+
 }
 
 TRULIA_HOUSE_SCAN_DEFAULT_QUERY_VARIABLES = {
