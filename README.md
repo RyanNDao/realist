@@ -3,6 +3,11 @@
 ## Overview
 Realist is a tool designed to assist real estate buyers by analyzing property listings. It scrapes real estate listing websites for home data and sends the data into a database to be stored. In the future, the tool will provide insights that help users make informed purchasing decisions.
 
+## Screenshots
+![image](https://github.com/user-attachments/assets/d4413929-fa3d-4420-a6a2-92feec53de43)
+![image](https://github.com/user-attachments/assets/0b877beb-32dc-4d3e-bf45-ad24839ba3d4)
+
+
 ## Installation
 
 To set up the project environment, follow these steps:
