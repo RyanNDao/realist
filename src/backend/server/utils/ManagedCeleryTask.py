@@ -5,7 +5,6 @@ LOGGER = logging.getLogger(__name__)
 
 class ManagedTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        LOGGER.error("CEPYO", type(exc))
         if isinstance(exc, SoftTimeLimitExceeded):
             LOGGER.error(f'Task {task_id} was terminated')
         else:

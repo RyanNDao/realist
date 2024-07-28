@@ -57,7 +57,7 @@ export interface ApiPriceHistory {
         formattedPriceChangePercent: string;
         priceChangeDirection: string;
         priceChangePercent: number;
-        priceChangeValue: {
+        priceChangeValue?: {
             formattedPrice: string;
         }
     }
@@ -122,7 +122,7 @@ export interface PriceHistory {
         formattedPriceChangePercent: string;
         priceChangeDirection: string;
         priceChangePercent: number;
-        priceChangeValue: string;
+        priceChangeValue?: string;
     }
 }
 

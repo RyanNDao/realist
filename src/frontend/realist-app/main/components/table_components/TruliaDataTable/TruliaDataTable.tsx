@@ -61,7 +61,7 @@ export function TruliaDataTable ({isFetching, onListingClick, listings}: TruliaD
                         formattedPriceChangePercent: apiListingObjectPriceHistory.priceChange.formattedPriceChangePercent,
                         priceChangeDirection: apiListingObjectPriceHistory.priceChange.priceChangeDirection,
                         priceChangePercent: apiListingObjectPriceHistory.priceChange.priceChangePercent,
-                        priceChangeValue: apiListingObjectPriceHistory.priceChange.priceChangeValue.formattedPrice
+                        priceChangeValue: apiListingObjectPriceHistory.priceChange.priceChangeValue?.formattedPrice
                     } : undefined
                 }
                 listingObjectPriceHistoryList.push(listingObjectPriceHistory);
