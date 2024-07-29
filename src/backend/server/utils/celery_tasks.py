@@ -54,8 +54,8 @@ def scrapeZipcodeTask(self, zipcode):
     searchType = random.choice(['FOR_SALE', 'FOR_RENT'])
     LOGGER.info(f'CRON JOB triggered to scrape {searchType} properties for zipcode: {zipcode}. TIME: {datetime.datetime.now(datetime.timezone.utc)}')
     backendToken = generate_token('realistBackend', None, os.getenv('JWT_SECRET_KEY'), 60*10)
-    url = f'{baseUrl}/api/trulia/scrape?zips={zipcode}&limit=100&searchType={searchType}'
-    # url = f'{baseUrl}/api/test-error'
+    # url = f'{baseUrl}/api/trulia/scrape?zips={zipcode}&limit=100&searchType={searchType}'
+    url = f'{baseUrl}/api/test-error'
     headers = {'Authorization': f'Bearer {backendToken}'}
     requests.get(url, headers=headers)
     LOGGER.debug(f"Successfully scraped listings for zipcode: {zipcode}")
