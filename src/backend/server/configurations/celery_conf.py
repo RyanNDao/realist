@@ -26,7 +26,7 @@ def initCelery(app=None) -> Celery:
     celery.conf.beat_schedule = {
         'trigger_schedule_every_midnight': {
             'task': 'src.backend.server.utils.celery_tasks.triggerScrapeScheduling',
-            'schedule': crontab(hour=21, minute=45)  # Executes at midnight New York time
+            'schedule': crontab(hour=0, minute=0)  # Executes at midnight New York time
     }
 }
     return celery
