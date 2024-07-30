@@ -23,8 +23,7 @@ class TruliaScraperSchedulerService():
             timesToRunToday = random.randint(1, 3) # random amount of times to run today
             nextRunTime = datetime.now(timezone.utc)
             for _ in range(timesToRunToday):
-                ms_delay = random.randint(600000, 21600000) # random delay between 10 minutes to 12 hours
-                LOGGER.info(ms_delay)
+                ms_delay = random.randint(600000, 50000000) # random delay between 10 minutes to 12 hours
                 nextRunTime += timedelta(milliseconds=ms_delay)
                 if nextRunTime.day == datetime.now(timezone.utc).day:
                     LOGGER.info(f"Scheduling 'scrape_function' for zipcode {zipcode} at {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')}")

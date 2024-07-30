@@ -22,6 +22,7 @@ def initCelery(app=None) -> Celery:
         celery.Task = ContextTask
         celery.control.purge()
 
+    celery.conf.broker_transport_options = {"visibility_timeout": float("inf")}
     celery.conf.timezone = 'America/New_York' 
     celery.conf.beat_schedule = {
         'trigger_schedule_every_midnight': {
