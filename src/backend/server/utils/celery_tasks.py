@@ -1,6 +1,7 @@
 import os
 import random
 from backend.helpers.database_helpers import generate_token
+from backend.scrapers.trulia.constants import SEARCH_TYPES
 from backend.server.utils.ManagedCeleryTask import ManagedTask
 from src.backend.server.configurations.celery_conf import celeryApp, inspector
 import requests
@@ -50,14 +51,24 @@ def triggerScrapeScheduling(self):
     LOGGER.info(response)
 
 @celeryApp.task(bind=True, base=ManagedTask)
-def scrapeZipcodeTask(self, zipcode):
-    searchType = random.choice(['FOR_SALE', 'FOR_RENT'])
+def scrapeTruliaByZipcodeTask(self, zipcode: str):
+    searchType = random.choice(SEARCH_TYPES)
     LOGGER.info(f'CRON JOB triggered to scrape {searchType} properties for zipcode: {zipcode}. TIME: {datetime.datetime.now(datetime.timezone.utc)}')
     backendToken = generate_token('realistBackend', None, os.getenv('JWT_SECRET_KEY'), 60*10)
     url = f'{baseUrl}/api/trulia/scrape?zips={zipcode}&limit=100&searchType={searchType}'
-    # url = f'{baseUrl}/api/test-error'
+    # url = f'{baseUrl}/api/test-error?zipcode={zipcode}'
     headers = {'Authorization': f'Bearer {backendToken}'}
     requests.get(url, headers=headers)
     LOGGER.debug(f"Successfully scraped listings for zipcode: {zipcode}")
+
+@celeryApp.task(bind=True, base=ManagedTask)
+def scrapeTruliaBySearchTypeTask(self, searchType: str):
+    LOGGER.info(f'CRON JOB triggered to scrape {searchType} properties. TIME: {datetime.datetime.now(datetime.timezone.utc)}')
+    backendToken = generate_token('realistBackend', None, os.getenv('JWT_SECRET_KEY'), 60*10)
+    url = f'{baseUrl}/api/trulia/scrape?limit=100&searchType={searchType}'
+    # url = f'{baseUrl}/api/test-error?searchType={searchType}'
+    headers = {'Authorization': f'Bearer {backendToken}'}
+    requests.get(url, headers=headers)
+    LOGGER.debug(f"Successfully scraped listings for search type: {searchType}")
 
 

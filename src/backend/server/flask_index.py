@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
 from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
 from backend.database.services.TruliaScraperSchedulerService import TruliaScraperSchedulerService
@@ -14,6 +14,7 @@ from backend.database.services.UserService import UserService
 from backend.server.configurations import exception_handling_config
 import logging
 from src.backend.server.configurations.celery_conf import initCelery
+
 
 load_dotenv()
 LOGGER = logging.getLogger(__name__)
@@ -49,10 +50,11 @@ app = create_app()
 
 
 
-@app.route('/api/test-error',methods=['GET'])
+@app.route('/api/test-error', methods=['GET'])
 def test_error():
-    LOGGER.error('This is a test error message')
-    raise CursorError("Test error", cause="This is a test cause")
+    params = request.args.to_dict()    
+    LOGGER.error(f'This is a test error message with params: {params}')
+    raise CursorError("Test error", cause=f"This is a test cause with params: {params}")
 
 def main():
     app.run(debug=True, port=8000, use_reloader=False)

@@ -5,29 +5,39 @@ import logging
 import requests
 
 from backend.helpers.database_helpers import generate_token
-from src.backend.server.utils.celery_tasks import scrapeZipcodeTask
+from src.backend.server.utils.celery_tasks import scrapeTruliaBySearchTypeTask, scrapeTruliaByZipcodeTask
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 class TruliaScraperSchedulerService():
 
     @staticmethod
-    def scheduleScrapesOfZipcodes(zipcodes):
-        LOGGER.info('Scraping scheduling kicked off!!')
-        possibleZipCodes = max(len(zipcodes) - 15, 5)
-        zipcodesToSelect = random.randint(3, possibleZipCodes)
-        selectedZipcodes = random.sample(zipcodes, zipcodesToSelect)
-        LOGGER.info(f'Chosen zipcodes: {selectedZipcodes}')
+    def scheduleTruliaScrapeBySearchType(typesToScrape: list[str]):
+        LOGGER.info('Scraping scheduling of types kicked off!')
+        # 1 minute (60,000) - 2 hours (7,200,000)
+        TruliaScraperSchedulerService.determineRuntimesToTasks(typesToScrape, scrapeTruliaBySearchTypeTask, 5, 60000, 7200000)
 
-        for zipcode in selectedZipcodes:
-            timesToRunToday = random.randint(1, 3) # random amount of times to run today
+
+    @staticmethod
+    def scheduleTruliaScrapeByZipcodes(zipcodes: list[str]):
+        possibleZipCodes = max(len(zipcodes), 5)
+        zipcodesToSelect = random.randint(5, possibleZipCodes)
+        selectedZipcodes = random.sample(zipcodes, zipcodesToSelect)
+        LOGGER.info(f'Zipcodes being scheduled to be scraped: {selectedZipcodes}')
+        # 10 minutes (600,000) - 12 hours (43,200,000)
+        TruliaScraperSchedulerService.determineRuntimesToTasks(selectedZipcodes, scrapeTruliaByZipcodeTask, 3, 600000, 43200000)
+
+    @staticmethod
+    def determineRuntimesToTasks(listOfArgsToPassToTask: list[object], celeryTaskFunction: callable, maxTimesToRun: int, minDelay: int, maxDelay: int):
+        for arg in listOfArgsToPassToTask:
+            timesToRunToday = random.randint(1, maxTimesToRun) # random amount of times to run today
             nextRunTime = datetime.now(timezone.utc)
             for _ in range(timesToRunToday):
-                ms_delay = random.randint(600000, 50000000) # random delay between 10 minutes to 12 hours
+                ms_delay = random.randint(minDelay, maxDelay) # random delay between 10 minutes to 12 hours
                 nextRunTime += timedelta(milliseconds=ms_delay)
                 if nextRunTime.day == datetime.now(timezone.utc).day:
-                    LOGGER.info(f"Scheduling 'scrape_function' for zipcode {zipcode} at {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')}")
-                    scrapeZipcodeTask.apply_async(args=[zipcode], eta=nextRunTime)
+                    LOGGER.info(f"Scheduling {celeryTaskFunction.__name__} for {arg} at {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')}")
+                    celeryTaskFunction.apply_async(args=[arg], eta=nextRunTime)
                 else:
-                    LOGGER.info(f"Stopped scheduling for zipcode {zipcode} as next run time {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')} crosses midnight.")
+                    LOGGER.info(f"Stopped scheduling for {arg} as next run time {nextRunTime.strftime('%Y-%m-%d %H:%M:%S')} crosses midnight.")
                     break  # Stop scheduling if the next run time is not today

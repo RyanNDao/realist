@@ -43,23 +43,30 @@ class DataParser():
         return currentLevel if currentLevel else default
 
     @staticmethod
-    def getAttribute(obj: dict, path: list[str] | str, default=None, parserFunction: Callable = None, mustReturnSomething: bool = False, **kwargs):
+    def getAttribute(obj: dict | list, path: list[str] | str, default=None, parserFunction: Callable = None, mustReturnSomething: bool = False, **kwargs):
         parserFunction = parserFunction if parserFunction else DataParser.defaultParse
         try:
+            url = obj.get('url', 'N/A')
+        except:
+            url = 'N/A'
+        try:
             returnedAttribute = parserFunction(obj, path, default, **kwargs)
-            if (returnedAttribute == None) and mustReturnSomething:
+            if (returnedAttribute == default) and mustReturnSomething:
                 raise Exception('Nothing was returned while parsing even though something was expected!')
             return returnedAttribute
         except Exception as e:
-            LOGGER.warning('A(n) {errorType} has occurred while extracting home data: {e} | Path: {path} | Parser Function: {func}'.format(
+            errorStack = 'A(n) {errorType} has occurred while extracting home data: {e} | Path: {path} | Parser Function: {func} | URL: {url}'.format(
                 errorType = e.__class__.__name__,
                 e=e,
                 path = path,
-                func = parserFunction.__name__
-            ))
+                func = parserFunction.__name__,
+                url=url
+            )
             if mustReturnSomething:
-                raise Exception(e)
-            return default
+                raise Exception(errorStack)
+            else:
+                LOGGER.warning(errorStack)
+                return default
         
 
 class DataParser_HouseScan(DataParser):
@@ -77,11 +84,14 @@ class DataParser_HouseScan(DataParser):
     def parseHouseData(self, listingsData):
         scrapedHomes = {}
         for home in listingsData['data']['searchResultMap']['homes']:
-            home = returnedObjectWithPoppedAttributes(home, self.attributesToPop) #less objects to look at while debugging
-            parsedHomeData = self.parseHomeData(home)
-            if parsedHomeData:
-                scrapedHomes[parsedHomeData['url']] = parsedHomeData
-                self.urls.append(parsedHomeData['url'])
+            try:
+                home = returnedObjectWithPoppedAttributes(home, self.attributesToPop) #less objects to look at while debugging
+                parsedHomeData = self.parseHomeData(home)
+                if parsedHomeData:
+                    scrapedHomes[parsedHomeData['url']] = parsedHomeData
+                    self.urls.append(parsedHomeData['url'])
+            except Exception as e:
+                LOGGER.warning(f'Skipping listing as an error occurred while parsing: {e}')
         if len(scrapedHomes) == 0:
             LOGGER.error(f'Scrape was empty! Here was the scraped result: {listingsData}')
         else: 
@@ -89,8 +99,7 @@ class DataParser_HouseScan(DataParser):
         return scrapedHomes
     
     def parseHomeData(self, homeData) -> OrderedDict:
-        if (parsedHomeData:= self.extractPrimaryDataFromHome(homeData)) is None:
-            return None
+        parsedHomeData = self.extractPrimaryDataFromHome(homeData)
         parsedHomeData = self.extractSupplementaryDataFromHome(homeData, copy.deepcopy(parsedHomeData))
         parsedHomeData = self.extractTrackingDataFromHome(homeData, copy.deepcopy(parsedHomeData))
         LOGGER.debug('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
@@ -110,14 +119,12 @@ class DataParser_HouseScan(DataParser):
         except AttributeError:
             if location:= homeData.get('location', ''):
                 address = location.get('partialLocation', 'Unknown address')
-                LOGGER.warning('{address} could not be added due to missing asking price'.format(address=address))
+                raise DataParsingError('{address} could not be added due to missing asking price'.format(address=address))
             else:
-                LOGGER.warning('{address} could not be added due to missing address'.format(address=address))
-            return None
+                raise DataParsingError('{address} could not be added due to missing address'.format(address=address))
         except ValueError:
             address = homeData.get('location', {}).get('partialLocation', 'Unknown address')
-            LOGGER.warning('{address} was not added due to non-specific asking price'.format(address=address))
-            return None
+            raise DataParsingError('{address} was not added due to non-specific asking price'.format(address=address))
 
     def extractSupplementaryDataFromHome(self, homeData: dict, parsedHomeData: OrderedDict) -> OrderedDict:
         parsedHomeData['city'] = self.getAttribute(homeData, ['location', 'city'])
@@ -127,7 +134,7 @@ class DataParser_HouseScan(DataParser):
         parsedHomeData['bathrooms'] = self.getAttribute(homeData, ['bathrooms', 'formattedValue'], default=None, parserFunction=self.getBathroomsBedrooms)
         parsedHomeData['trulia_listing_id'] = self.getAttribute(homeData, ['metadata', 'legacyIdForSave'])
         parsedHomeData['date_listed_or_sold'] = self.getAttribute(homeData, path=None, default=None, parserFunction=self.getDateListedOrSold, searchType=self.searchType)
-        parsedHomeData['listing_status'] = self.getAttribute(homeData, path=None, default='Unknown', parserFunction=self.getListingStatus)
+        parsedHomeData['listing_status'] = self.getAttribute(homeData, path=None, default='Unknown', parserFunction=self.getListingStatus, mustReturnSomething=True)
         return parsedHomeData
 
     def extractTrackingDataFromHome(self, homeData: dict, parsedHomeData: OrderedDict) -> OrderedDict:
@@ -161,10 +168,10 @@ class DataParser_HouseScan(DataParser):
         if len(entryWithKey) == 1:
             return entryWithKey[0][valueName]
         elif len(entryWithKey) == 0:
-            LOGGER.warning(f'Tracking list did not include key {key}')
+            LOGGER.debug(f'Tracking list did not include key {key}')
             return default
         else:
-            LOGGER.warning(f'More than one entry with key {key} was found: {entryWithKey}')
+            LOGGER.debug(f'More than one entry with key {key} was found: {entryWithKey}')
             return default
         
     @staticmethod
@@ -174,10 +181,10 @@ class DataParser_HouseScan(DataParser):
             match = re.search(rf'(?:^|\W){keyword}:(.*?);', entryWithKey[0][valueName])
             return match.group(1) if match else default
         elif len(entryWithKey) == 0:
-            LOGGER.warning(f'Tracking list did not include key {miscObjectKey}')
+            LOGGER.debug(f'Tracking list did not include key {miscObjectKey}')
             return default
         else:
-            LOGGER.warning(f'More than one entry with key {miscObjectKey} was found: {entryWithKey}')
+            LOGGER.debug(f'More than one entry with key {miscObjectKey} was found: {entryWithKey}')
             return default
 
     @staticmethod
@@ -229,7 +236,7 @@ class DataParser_DetailedScrape(DataParser):
         for homeData in listingsData['data'].values():
             try:
                 associatedHome, url = self.returnAssociatedScrapedHome(homeData, scrapedHomes)
-            except DataParsingError as e:
+            except Exception as e:
                 LOGGER.warning(str(e))
                 continue
             associatedHome = self.extractFeaturesData(homeData, copy.deepcopy(associatedHome))
