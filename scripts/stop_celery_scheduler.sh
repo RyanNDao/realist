@@ -31,3 +31,8 @@ UNIQUE_WORKER_IDENTIFIER="src.backend.server.configurations.celery_conf worker"
 
 terminate_process "$UNIQUE_BEAT_IDENTIFIER"
 terminate_process "$UNIQUE_WORKER_IDENTIFIER"
+
+if [ -f ./celerybeat-schedule ]; then
+  echo "Removing celerybeat schedule file..."
+  rm ./celerybeat-schedule
+fi
