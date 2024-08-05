@@ -7,7 +7,9 @@ import requests
 import os
 import json
 
-LOGGER = logging.getLogger(__name__)
+from backend.server.utils.CommonLogger import CommonLogger
+
+
 
 class TruliaScraper():
 
@@ -16,7 +18,7 @@ class TruliaScraper():
         self.url = scrapeUrl if scrapeUrl else os.getenv('TRULIA_ENDPOINT_URL', '')
         self.payloadGenerator = payloadGenerator
         self.generatePayload(self.payloadGenerator)
-        LOGGER.info('Trulia scraper object initialized with payload type {scraperType}, url loaded is: {url}'.format(scraperType=payloadGenerator.__class__.__name__,url=self.url))
+        CommonLogger.LOGGER.debug('Trulia scraper object initialized with payload type {scraperType}, url loaded is: {url}'.format(scraperType=payloadGenerator.__class__.__name__,url=self.url))
         self._data = None
 
     def makeRequest(self) -> None:
@@ -25,7 +27,7 @@ class TruliaScraper():
             self.data = response.text
         else:
             self.data = None
-            LOGGER.warning('Code [{statusCode}]: {text}'.format(statusCode=response.status_code, text=response.text))
+            CommonLogger.LOGGER.warning('Code [{statusCode}]: {text}'.format(statusCode=response.status_code, text=response.text))
 
     def returnResponse(self):
         return requests.request(
@@ -48,9 +50,9 @@ class TruliaScraper():
             self._data = data
         elif isinstance(data, type(None)):
             self._data = None
-            LOGGER.warning('Data type of TruliaScraper instance has been set to None. Check to see if this is expected')
+            CommonLogger.LOGGER.warning('Data type of TruliaScraper instance has been set to None. Check to see if this is expected')
         else:
-            LOGGER.error('Data type of {dataType} is invalid. Convert to dict or string.'.format(dataType=type(data)))
+            CommonLogger.LOGGER.error('Data type of {dataType} is invalid. Convert to dict or string.'.format(dataType=type(data)))
             raise AttributeError('data type is invalid')
 
     @property
@@ -62,7 +64,7 @@ class TruliaScraper():
         if (isinstance(payloadGenerator, (PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper))):
             self._payloadGenerator = payloadGenerator
         else:
-            LOGGER.error('Payload generator type of {dataType} is invalid. It should be an instance of a PayloadGenerator class'.format(dataType=type(payloadGenerator)))
+            CommonLogger.LOGGER.error('Payload generator type of {dataType} is invalid. It should be an instance of a PayloadGenerator class'.format(dataType=type(payloadGenerator)))
             raise AttributeError('payloadGenerator type is invalid')
     
     @property
@@ -77,7 +79,7 @@ class TruliaScraper():
         if isinstance(payloadGenerator, (PayloadGenerator_HouseScan, PayloadGenerator_DetailedHouseScraper)):
             self.payload = payloadGenerator.payload
         else:
-            LOGGER.error('Argument passed is not of type PayloadGenerator, instead it is {dataType}. Could not extract payload.'.format(dataType=type(payloadGenerator)))
+            CommonLogger.LOGGER.error('Argument passed is not of type PayloadGenerator, instead it is {dataType}. Could not extract payload.'.format(dataType=type(payloadGenerator)))
 
     
     

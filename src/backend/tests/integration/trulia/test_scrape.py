@@ -6,7 +6,7 @@ from unittest.mock import patch, Mock
 from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
 from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
 
-LOGGER = logging.getLogger(__name__)
+
 
 
 def test_end_to_end_scraping_and_parse():

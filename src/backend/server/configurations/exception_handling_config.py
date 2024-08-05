@@ -1,9 +1,10 @@
 from backend.exceptions import CursorError
+from backend.server.utils.CommonLogger import CommonLogger
 from backend.server.utils.ResponseBuilder import ResponseBuilder
 import traceback
 from flask import Blueprint
 import logging
-LOGGER = logging.getLogger(__name__)
+
 exceptionHandlerBp = Blueprint('exceptionHandler', __name__)
 
 
@@ -13,5 +14,5 @@ def handle_db_error(error):
 
 @exceptionHandlerBp.app_errorhandler(Exception)
 def handle_unhandled_error(error):
-    LOGGER.error(traceback.format_exc())
+    CommonLogger.LOGGER.error(traceback.format_exc())
     return ResponseBuilder.buildFailureResponse(f'An unhandled error has occurred: {error}', 400)

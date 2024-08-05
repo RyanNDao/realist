@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 import logging
 from collections import OrderedDict
 
-LOGGER = logging.getLogger(__name__)
+
 
 def test_trulia_house_scan_data_parser_default(caplog):
     houseScanDataParser = DataParser_HouseScan(

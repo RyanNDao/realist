@@ -6,6 +6,7 @@ from backend.exceptions import CursorError
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
 from dotenv import load_dotenv
+from backend.server.utils.CommonLogger import CommonLogger
 from backend.server.controllers import UserController, TruliaScraperController, TruliaScraperSchedulerController
 from flask_injector import FlaskInjector
 from injector import singleton, Binder
@@ -17,8 +18,7 @@ from src.backend.server.configurations.celery_conf import initCelery
 
 
 load_dotenv()
-LOGGER = logging.getLogger(__name__)
-
+CommonLogger.setupLogger(logging.DEBUG if os.getenv('FLASK_ENV') == 'development' else logging.WARNING)
 
 
 def create_app() -> Flask:
@@ -31,7 +31,6 @@ def create_app() -> Flask:
         binder.bind(TruliaHouseListingService, to=trulia_house_listing_service, scope=singleton)
         binder.bind(TruliaScraperSchedulerService, to=TruliaScraperSchedulerService(), scope=singleton)
 
-    
     app = Flask(__name__)
     app.db_pool = {
         'home_data': DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING_TEMPLATE').format('home_data')),
@@ -49,11 +48,10 @@ def create_app() -> Flask:
 app = create_app()
 
 
-
 @app.route('/api/test-error', methods=['GET'])
 def test_error():
     params = request.args.to_dict()    
-    LOGGER.error(f'This is a test error message with params: {params}')
+    CommonLogger.LOGGER.error(f'This is a test error message with params: {params}')
     raise CursorError("Test error", cause=f"This is a test cause with params: {params}")
 
 def main():

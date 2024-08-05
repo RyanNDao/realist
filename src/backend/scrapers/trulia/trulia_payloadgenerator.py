@@ -4,8 +4,9 @@ import json
 import requests
 import copy
 from backend.helpers import common_helpers
+from backend.server.utils.CommonLogger import CommonLogger
 
-LOGGER = logging.getLogger(__name__)
+
 
 queryVariableMapper = {
     'searchType': str,
@@ -34,9 +35,9 @@ class PayloadGenerator_HouseScan():
         for attribute in kwargs:
             if attribute in queryVariableMapper and type(kwargs[attribute]) is not queryVariableMapper[attribute]:
                 castType = queryVariableMapper[attribute]
-                LOGGER.warning(f'Casting {attribute} from {type(attribute)} to {queryVariableMapper[attribute]}')
+                CommonLogger.LOGGER.warning(f'Casting {attribute} from {type(attribute)} to {queryVariableMapper[attribute]}')
                 kwargs[attribute] = castType(kwargs[attribute])
-            LOGGER.info('Modifying the "{attribute}" attribute to <{newValue}> if the key exists'.format(attribute=attribute, newValue=kwargs[attribute]))
+            CommonLogger.LOGGER.debug('Modifying the "{attribute}" attribute to <{newValue}> if the key exists'.format(attribute=attribute, newValue=kwargs[attribute]))
             common_helpers.editQueryVariables(attribute, kwargs[attribute], self.queryVariables)
         self.fillPayloadTemplate()
 
@@ -61,7 +62,7 @@ class PayloadGenerator_DetailedHouseScraper():
             self.payload['query'] = self.getGraphqlPayloadQueryString(urls)
             self.payload = json.dumps(self.payload)
         else:
-            LOGGER.error('List of endpoints passed to scraper cannot be blank and must be type array - urls: {urls}'.format(urls=str(urls)))
+            CommonLogger.LOGGER.error('List of endpoints passed to scraper cannot be blank and must be type array - urls: {urls}'.format(urls=str(urls)))
             raise ValueError('List of endpoints passed to scraper cannot be blank and must be type array.')
 
     def getGraphqlPayloadVariablesString(self, urls):

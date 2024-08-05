@@ -10,7 +10,7 @@ from backend.server.utils.ResponseBuilder import ResponseBuilder
 
 baseUrl = 'http://localhost:8000'
 
-LOGGER = logging.getLogger(__name__)
+
 
 truliaScraperSchedulerBp = Blueprint('truliaScraperSchedulerController', import_name=__name__,  url_prefix=None)
 

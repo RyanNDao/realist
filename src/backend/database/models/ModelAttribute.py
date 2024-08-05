@@ -2,7 +2,7 @@ import psycopg
 from psycopg.types.json import Jsonb
 import logging
 
-LOGGER = logging.getLogger(__name__)
+
 
 class ModelAttribute():
 

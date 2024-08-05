@@ -24,6 +24,10 @@ SEARCH_TYPES = [
     # "SOLD",
 ]
 
+TRULIA_INVALID_ADDRESS_NAMES = [
+    'address not disclosed'
+]
+
 TRULIA_HOUSE_SCAN_DEFAULT_QUERY_VARIABLES = {
     "isSwipeableFactsEnabled": False,
     "heroImageFallbacks": [
