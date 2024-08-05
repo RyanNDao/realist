@@ -10,7 +10,7 @@ from backend.tests.data.fixtures_data import *
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 
 pytest.testDirectory = os.path.dirname(os.path.abspath(__file__))
-LOGGER = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope='session', autouse=True)
 def load_env():

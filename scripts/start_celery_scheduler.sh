@@ -23,6 +23,14 @@ if [ $? -eq 0 ]; then
     echo "Celery Beat is already running."
 else
     echo "Starting Celery Beat..."
+    if [ -f ./celerybeat-schedule ]; then
+      echo "Removing existing celerybeat schedule file..."
+      rm ./celerybeat-schedule
+    fi
+    if [ -f ./celery_beat.log ]; then
+      echo "Removing existing celery_beat log file..."
+      rm ./celery_beat.log
+    fi
     nohup $BEAT_COMMAND > celery_beat.log 2>&1 &
     echo "Celery Beat started with PID $!"
 fi
@@ -32,6 +40,10 @@ if [ $? -eq 0 ]; then
     echo "Celery Worker is already running."
 else
     echo "Starting Celery Worker..."
+    if [ -f ./celery_worker.log ]; then
+      echo "Removing existing celery_worker log file..."
+      rm ./celery_worker.log
+    fi
     nohup $WORKER_COMMAND > celery_worker.log 2>&1 &
     echo "Celery Worker started with PID $!"
 fi

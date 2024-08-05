@@ -16,8 +16,17 @@ TRULIA_HEADERS = {
     'Cookie': os.getenv('TRULIA_COOKIE', ''),
     'User-Agent': os.getenv('USER_AGENT', None) if os.getenv('USER_AGENT')
     	else random.choice(USER_AGENTS_LIST)
-
 }
+
+SEARCH_TYPES = [
+    "FOR_SALE",
+    "FOR_RENT",
+    # "SOLD",
+]
+
+TRULIA_INVALID_ADDRESS_NAMES = [
+    'address not disclosed'
+]
 
 TRULIA_HOUSE_SCAN_DEFAULT_QUERY_VARIABLES = {
     "isSwipeableFactsEnabled": False,

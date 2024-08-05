@@ -8,8 +8,10 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Callable
 from backend.exceptions import DataParsingError
+from backend.scrapers.trulia.constants import TRULIA_INVALID_ADDRESS_NAMES
+from backend.server.utils.CommonLogger import CommonLogger
 
-LOGGER = logging.getLogger(__name__)
+
 
 class DataParser():
 
@@ -29,9 +31,9 @@ class DataParser():
             self._data = data
         elif isinstance(data, type(None)):
             self._data = None
-            LOGGER.warning('Data type of DataParser instance has been set to None. Check to see if this is expected')
+            CommonLogger.LOGGER.warning('Data type of DataParser instance has been set to None. Check to see if this is expected')
         else:
-            LOGGER.error('Data type of {dataType} is invalid. Convert to dict or string.'.format(dataType=type(data)))
+            CommonLogger.LOGGER.error('Data type of {dataType} is invalid. Convert to dict or string.'.format(dataType=type(data)))
             raise AttributeError('data type is invalid')
 
     @staticmethod
@@ -43,23 +45,30 @@ class DataParser():
         return currentLevel if currentLevel else default
 
     @staticmethod
-    def getAttribute(obj: dict, path: list[str] | str, default=None, parserFunction: Callable = None, mustReturnSomething: bool = False, **kwargs):
+    def getAttribute(obj: dict | list, path: list[str] | str, default=None, parserFunction: Callable = None, mustReturnSomething: bool = False, **kwargs):
         parserFunction = parserFunction if parserFunction else DataParser.defaultParse
         try:
+            url = obj.get('url', 'N/A')
+        except:
+            url = 'N/A'
+        try:
             returnedAttribute = parserFunction(obj, path, default, **kwargs)
-            if (returnedAttribute == None) and mustReturnSomething:
+            if (returnedAttribute == default) and mustReturnSomething:
                 raise Exception('Nothing was returned while parsing even though something was expected!')
             return returnedAttribute
         except Exception as e:
-            LOGGER.warning('A(n) {errorType} has occurred while extracting home data: {e} | Path: {path} | Parser Function: {func}'.format(
+            errorStack = 'A(n) {errorType} has occurred while extracting home data: {e} | Path: {path} | Parser Function: {func} | URL: {url}'.format(
                 errorType = e.__class__.__name__,
                 e=e,
                 path = path,
-                func = parserFunction.__name__
-            ))
+                func = parserFunction.__name__,
+                url=url
+            )
             if mustReturnSomething:
-                raise Exception(e)
-            return default
+                raise Exception(errorStack)
+            else:
+                CommonLogger.LOGGER.warning(errorStack)
+                return default
         
 
 class DataParser_HouseScan(DataParser):
@@ -77,30 +86,35 @@ class DataParser_HouseScan(DataParser):
     def parseHouseData(self, listingsData):
         scrapedHomes = {}
         for home in listingsData['data']['searchResultMap']['homes']:
-            home = returnedObjectWithPoppedAttributes(home, self.attributesToPop) #less objects to look at while debugging
-            parsedHomeData = self.parseHomeData(home)
-            if parsedHomeData:
-                scrapedHomes[parsedHomeData['url']] = parsedHomeData
-                self.urls.append(parsedHomeData['url'])
+            try:
+                home = returnedObjectWithPoppedAttributes(home, self.attributesToPop) #less objects to look at while debugging
+                parsedHomeData = self.parseHomeData(home)
+                if parsedHomeData:
+                    scrapedHomes[parsedHomeData['url']] = parsedHomeData
+                    self.urls.append(parsedHomeData['url'])
+            except Exception as e:
+                CommonLogger.LOGGER.warning(f'Skipping listing as an error occurred while parsing: {e}')
         if len(scrapedHomes) == 0:
-            LOGGER.error(f'Scrape was empty! Here was the scraped result: {listingsData}')
+            CommonLogger.LOGGER.error(f'Scrape was empty! Here was the scraped result: {listingsData}')
         else: 
-            LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
+            CommonLogger.LOGGER.info('Parse finished. There were {numOfScrapedHomes} properties that were successfully parsed.'.format(numOfScrapedHomes=len(scrapedHomes)))
         return scrapedHomes
     
     def parseHomeData(self, homeData) -> OrderedDict:
-        if (parsedHomeData:= self.extractPrimaryDataFromHome(homeData)) is None:
-            return None
+        parsedHomeData = self.extractPrimaryDataFromHome(homeData)
         parsedHomeData = self.extractSupplementaryDataFromHome(homeData, copy.deepcopy(parsedHomeData))
         parsedHomeData = self.extractTrackingDataFromHome(homeData, copy.deepcopy(parsedHomeData))
-        LOGGER.debug('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
+        CommonLogger.LOGGER.debug('{address} was successfully scraped and parsed!'.format(address=parsedHomeData['address']))
         return parsedHomeData
     
     def extractPrimaryDataFromHome(self, homeData: dict) -> OrderedDict | None: 
         extractedPrimaryData = OrderedDict()
         try:
             extractedPrimaryData['location'] = ' '.join(homeData['location']['fullLocation'].split())
-            extractedPrimaryData['address'] = ' '.join(homeData['location']['partialLocation'].split())
+            address = ' '.join(homeData['location']['partialLocation'].split())
+            if address.lower() in TRULIA_INVALID_ADDRESS_NAMES:
+                raise DataParsingError(f'Listing address "{address} is invalid!')
+            extractedPrimaryData['address'] = address
             extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', '').replace('/mo',''))
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']
@@ -110,14 +124,12 @@ class DataParser_HouseScan(DataParser):
         except AttributeError:
             if location:= homeData.get('location', ''):
                 address = location.get('partialLocation', 'Unknown address')
-                LOGGER.warning('{address} could not be added due to missing asking price'.format(address=address))
+                raise DataParsingError('{address} could not be added due to missing asking price'.format(address=address))
             else:
-                LOGGER.warning('{address} could not be added due to missing address'.format(address=address))
-            return None
+                raise DataParsingError('{address} could not be added due to missing address'.format(address=address))
         except ValueError:
             address = homeData.get('location', {}).get('partialLocation', 'Unknown address')
-            LOGGER.warning('{address} was not added due to non-specific asking price'.format(address=address))
-            return None
+            raise DataParsingError('{address} was not added due to non-specific asking price'.format(address=address))
 
     def extractSupplementaryDataFromHome(self, homeData: dict, parsedHomeData: OrderedDict) -> OrderedDict:
         parsedHomeData['city'] = self.getAttribute(homeData, ['location', 'city'])
@@ -127,7 +139,7 @@ class DataParser_HouseScan(DataParser):
         parsedHomeData['bathrooms'] = self.getAttribute(homeData, ['bathrooms', 'formattedValue'], default=None, parserFunction=self.getBathroomsBedrooms)
         parsedHomeData['trulia_listing_id'] = self.getAttribute(homeData, ['metadata', 'legacyIdForSave'])
         parsedHomeData['date_listed_or_sold'] = self.getAttribute(homeData, path=None, default=None, parserFunction=self.getDateListedOrSold, searchType=self.searchType)
-        parsedHomeData['listing_status'] = self.getAttribute(homeData, path=None, default='Unknown', parserFunction=self.getListingStatus)
+        parsedHomeData['listing_status'] = self.getAttribute(homeData, path=None, default='Unknown', parserFunction=self.getListingStatus, mustReturnSomething=True)
         return parsedHomeData
 
     def extractTrackingDataFromHome(self, homeData: dict, parsedHomeData: OrderedDict) -> OrderedDict:
@@ -161,10 +173,10 @@ class DataParser_HouseScan(DataParser):
         if len(entryWithKey) == 1:
             return entryWithKey[0][valueName]
         elif len(entryWithKey) == 0:
-            LOGGER.warning(f'Tracking list did not include key {key}')
+            CommonLogger.LOGGER.debug(f'Tracking list did not include key {key}')
             return default
         else:
-            LOGGER.warning(f'More than one entry with key {key} was found: {entryWithKey}')
+            CommonLogger.LOGGER.debug(f'More than one entry with key {key} was found: {entryWithKey}')
             return default
         
     @staticmethod
@@ -174,10 +186,10 @@ class DataParser_HouseScan(DataParser):
             match = re.search(rf'(?:^|\W){keyword}:(.*?);', entryWithKey[0][valueName])
             return match.group(1) if match else default
         elif len(entryWithKey) == 0:
-            LOGGER.warning(f'Tracking list did not include key {miscObjectKey}')
+            CommonLogger.LOGGER.debug(f'Tracking list did not include key {miscObjectKey}')
             return default
         else:
-            LOGGER.warning(f'More than one entry with key {miscObjectKey} was found: {entryWithKey}')
+            CommonLogger.LOGGER.debug(f'More than one entry with key {miscObjectKey} was found: {entryWithKey}')
             return default
 
     @staticmethod
@@ -220,22 +232,22 @@ class DataParser_DetailedScrape(DataParser):
         if isinstance(scrapedHomes, dict) and all(isinstance(home, OrderedDict) for home in scrapedHomes.values()):
             self._scrapedHomes = scrapedHomes
         elif isinstance(scrapedHomes, dict):
-            LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
-            LOGGER.warning('Element types of object indices: {scrapedHomesTypes}'.format(scrapedHomesTypes=[type(home) for home in scrapedHomes.values()]))
+            CommonLogger.LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
+            CommonLogger.LOGGER.warning('Element types of object indices: {scrapedHomesTypes}'.format(scrapedHomesTypes=[type(home) for home in scrapedHomes.values()]))
         else:
-            LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
+            CommonLogger.LOGGER.warning('Could not assign scraped homes to DataParser_DetailedScrape, object needs to be a dict of OrderedDict.')
 
     def parseHouseData(self, listingsData: dict, scrapedHomes: dict[OrderedDict]):
         for homeData in listingsData['data'].values():
             try:
                 associatedHome, url = self.returnAssociatedScrapedHome(homeData, scrapedHomes)
-            except DataParsingError as e:
-                LOGGER.warning(str(e))
+            except Exception as e:
+                CommonLogger.LOGGER.warning(str(e))
                 continue
             associatedHome = self.extractFeaturesData(homeData, copy.deepcopy(associatedHome))
             associatedHome = self.extractAdditionalDetailedData(homeData, copy.deepcopy(associatedHome))
             scrapedHomes.update({url: associatedHome})
-            LOGGER.info('Scrape successful for listing with the following url: {url}'.format(url=url))
+            CommonLogger.LOGGER.debug('Scrape successful for listing with the following url: {url}'.format(url=url))
         return scrapedHomes
 
     def extractAdditionalDetailedData(self, homeData: dict, associatedHome: OrderedDict):
@@ -360,7 +372,7 @@ class DataParser_DetailedScrape(DataParser):
                 foundObject = next((element for element in currentLevel if element.get(level[0], None) == level[1]), {})
                 currentLevel = foundObject.get(level[2], {})
             else:
-                LOGGER.warning('The element, {invalidLevel}, in path is invalid. Returning default.'.format(invalidLevel=level))
+                CommonLogger.LOGGER.warning('The element, {invalidLevel}, in path is invalid. Returning default.'.format(invalidLevel=level))
                 return default
         return currentLevel if currentLevel and path else default
     

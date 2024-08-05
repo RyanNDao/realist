@@ -1,7 +1,9 @@
 import logging
 import copy
 
-LOGGER = logging.getLogger(__name__)
+from backend.server.utils.CommonLogger import CommonLogger
+
+
 
 def recursive_lookup(key, obj, path=None):
     if path is None:
@@ -21,7 +23,7 @@ def recursive_lookup(key, obj, path=None):
 def editQueryVariables(key, newValue, obj):
     _, path = recursive_lookup(key, obj)
     if not path:
-        LOGGER.warning(f'Did not find attribute "{key}" in query options')
+        CommonLogger.LOGGER.warning(f'Did not find attribute "{key}" in query options')
     nodeToEdit = obj
     for node in path:
         if node == key:

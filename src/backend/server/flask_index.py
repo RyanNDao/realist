@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from backend.database.dao.TruliaHouseListingDAO import TruliaHouseListingDAO
 from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
 from backend.database.services.TruliaScraperSchedulerService import TruliaScraperSchedulerService
@@ -6,6 +6,7 @@ from backend.exceptions import CursorError
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 import os
 from dotenv import load_dotenv
+from backend.server.utils.CommonLogger import CommonLogger
 from backend.server.controllers import UserController, TruliaScraperController, TruliaScraperSchedulerController
 from flask_injector import FlaskInjector
 from injector import singleton, Binder
@@ -15,9 +16,9 @@ from backend.server.configurations import exception_handling_config
 import logging
 from src.backend.server.configurations.celery_conf import initCelery
 
-load_dotenv()
-LOGGER = logging.getLogger(__name__)
 
+load_dotenv()
+CommonLogger.setupLogger(logging.DEBUG if os.getenv('FLASK_ENV') == 'development' else logging.WARNING)
 
 
 def create_app() -> Flask:
@@ -30,7 +31,6 @@ def create_app() -> Flask:
         binder.bind(TruliaHouseListingService, to=trulia_house_listing_service, scope=singleton)
         binder.bind(TruliaScraperSchedulerService, to=TruliaScraperSchedulerService(), scope=singleton)
 
-    
     app = Flask(__name__)
     app.db_pool = {
         'home_data': DatabaseConnectionPool(connectionString=os.getenv('CONNECTION_STRING_TEMPLATE').format('home_data')),
@@ -48,11 +48,11 @@ def create_app() -> Flask:
 app = create_app()
 
 
-
-@app.route('/api/test-error',methods=['GET'])
+@app.route('/api/test-error', methods=['GET'])
 def test_error():
-    LOGGER.error('This is a test error message')
-    raise CursorError("Test error", cause="This is a test cause")
+    params = request.args.to_dict()    
+    CommonLogger.LOGGER.error(f'This is a test error message with params: {params}')
+    raise CursorError("Test error", cause=f"This is a test cause with params: {params}")
 
 def main():
     app.run(debug=True, port=8000, use_reloader=False)

@@ -1,12 +1,13 @@
 from flask import Blueprint, request
 from backend.database.services.TruliaHouseListingService import TruliaHouseListingService
 from backend.helpers.database_helpers import token_required
+from backend.server.utils.CommonLogger import CommonLogger
 from backend.server.utils.ResponseBuilder import ResponseBuilder
 from backend.database.services.UserService import UserService
 from injector import inject
 import logging
 
-LOGGER = logging.getLogger(__name__)
+
 truliaScraperBp = Blueprint('truliaScraperController', import_name=__name__,  url_prefix='/trulia')
 
 class TruliaScraperController():
@@ -22,7 +23,7 @@ class TruliaScraperController():
             try:
                 scrapedEntries.append(trulia_house_listing_service.createTruliaHouseListingDataObject(homeData))
             except Exception as e:
-                LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {homeData}')
+                CommonLogger.LOGGER.error(f'The following error occurred in the controller while trying to insert data into DB: {e} for the following data: {homeData}')
         trulia_house_listing_service.insertNormalizedDataIntoDb(scrapedEntries, requestParams.get('searchType'))
         return ResponseBuilder.buildSuccessResponse(truliaData.scrapedHomes, 'Scrape successful!')
 

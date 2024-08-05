@@ -8,7 +8,7 @@ from backend.scrapers.trulia.trulia_payloadgenerator import PayloadGenerator_Det
 from backend.helpers.common_helpers import *  
 from backend.scrapers.trulia import constants
 
-LOGGER = logging.getLogger(__name__)
+
 
 
 def test_graphql_house_scan_default_query():

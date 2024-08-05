@@ -30,6 +30,6 @@ class ResponseBuilder():
             "success": False,
             "message": message,
             "status": statusCode
-        })
+        }), statusCode
     
 

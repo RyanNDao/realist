@@ -6,8 +6,6 @@ import jwt
 from backend.server.utils.ResponseBuilder import ResponseBuilder
 import os
 
-LOGGER = logging.getLogger(__name__)
-
 
 def build_dynamic_update_query_template(dataColumns: dict, keyName: str):
     setAttributesList = []
@@ -43,11 +41,10 @@ def token_required(f):
     def decorated(*args, **kwargs):
         bearerToken = request.authorization.token if request.authorization else None
         sessionToken = request.cookies.get('session_token') if request.cookies else None
-            
         if not (sessionToken or bearerToken):
             return ResponseBuilder.buildFailureResponse('Token is missing', 403)
         try:
-            token = sessionToken if sessionToken else bearerToken
+            token = bearerToken if bearerToken else sessionToken
             jwt.decode(token, os.getenv('JWT_SECRET_KEY'), algorithms=['HS256'])
         except jwt.exceptions.ExpiredSignatureError:
             return ResponseBuilder.buildFailureResponse('Token has expired', 403)

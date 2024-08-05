@@ -5,7 +5,7 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 
-LOGGER = logging.getLogger(__name__)
+
 
 def initCelery(app=None) -> Celery:
     celery = Celery(__name__, 

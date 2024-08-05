@@ -5,7 +5,9 @@ from collections import OrderedDict
 import logging
 from psycopg.types.json import Jsonb
 
-LOGGER = logging.getLogger(__name__)
+from backend.server.utils.CommonLogger import CommonLogger
+
+
 
 @dataclass
 class TruliaHouseListing:
@@ -72,7 +74,7 @@ class TruliaHouseListing:
                 selfAttribute = self.__getattribute__(attributeName)
                 otherAttribute = other.__getattribute__(attributeName)
             if selfAttribute != otherAttribute:
-                LOGGER.warning(f'When comparing TruliaHouseListing objects, \"{attributeName}\" did not match!')
+                CommonLogger.LOGGER.warning(f'When comparing TruliaHouseListing objects, \"{attributeName}\" did not match!')
                 return False
         else:
             return True

@@ -5,7 +5,7 @@ from backend.scrapers.trulia.trulia_scraper import TruliaScraper
 import json
 from unittest.mock import patch, Mock
 
-LOGGER = logging.getLogger(__name__)
+
 
 def test_trulia_scraper_house_scan_default_payload():
     scraper = TruliaScraper(PayloadGenerator_HouseScan())

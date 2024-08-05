@@ -1,20 +1,22 @@
 from celery import Task
 from celery.exceptions import SoftTimeLimitExceeded
 import logging
-LOGGER = logging.getLogger(__name__)
+
+from backend.server.utils.CommonLogger import CommonLogger
+
 
 class ManagedTask(Task):
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         if isinstance(exc, SoftTimeLimitExceeded):
-            LOGGER.error(f'Task {task_id} was terminated')
+            CommonLogger.LOGGER.error(f'Task {task_id} was terminated')
         else:
-            LOGGER.error(f'Task {task_id} failed: {exc} | {einfo}')
+            CommonLogger.LOGGER.error(f'Task {task_id} failed: {exc} | {einfo}')
 
     def on_success(self, retval, task_id, args, kwargs):
-        LOGGER.info(f'Task {task_id} completed successfully!!')
+        CommonLogger.LOGGER.info(f'Task {task_id} completed successfully!!')
 
     def on_revoked(self):
-        LOGGER.info('Task was revoked before starting. Cleanup could be done here.')
+        CommonLogger.LOGGER.warning('Task was revoked before starting. Cleanup could be done here.')
 
     def __call__(self, *args, **kwargs):
         try:
