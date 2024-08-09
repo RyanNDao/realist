@@ -5,8 +5,6 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 
-
-
 def initCelery(app=None) -> Celery:
     celery = Celery(__name__, 
         broker=os.getenv('CELERY_BROKER_URL'), 
