@@ -40,7 +40,7 @@ class TruliaHouseListingDAO():
             if not all([isinstance(entry, TruliaHouseListing) for entry in truliaHouseListingList]):
                 raise AttributeError(f'All entries must be of TruliaHouseListing type when trying to insert multiple listings into DB table {tableName}')
             cursor.executemany(f'INSERT INTO {tableName} {columns};', [entry.dict for entry in truliaHouseListingList])
-            CommonLogger.LOGGER.info(f'Total inserted rows: {cursor.rowcount}')
+            CommonLogger.LOGGER.warning(f'Total inserted rows: {cursor.rowcount}')
 
     def getListingByKey(self, keyValue: str, keyName='key', tableName=TRULIA_MAIN_TABLE_NAME) -> dict:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
@@ -87,4 +87,4 @@ class TruliaHouseListingDAO():
             setQueryTemplate = build_dynamic_update_query_template(TRULIA_MAIN_TABLE_COLUMNS, keyName=keyName)
             setQueryTemplate = setQueryTemplate.format(tableName=tableName, keyName=keyName)
             cursor.executemany(setQueryTemplate, [entry.dict for entry in truliaHouseListingList])
-            CommonLogger.LOGGER.info(f'Total updated rows: {cursor.rowcount}')
+            CommonLogger.LOGGER.warning(f'Total updated rows: {cursor.rowcount}')

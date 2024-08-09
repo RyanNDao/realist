@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 
 class CommonLogger:
     LOGGER = None
@@ -19,3 +20,5 @@ class CommonLogger:
             logger.propagate = False
             cls.LOGGER = logger
             cls.LOGGER.warning(f'Logging level has been set to: {logging.getLevelName(level)}')
+
+CommonLogger.setupLogger(logging.DEBUG if os.getenv('FLASK_ENV') == 'development' else logging.WARNING)
