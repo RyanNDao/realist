@@ -33,12 +33,19 @@ class TruliaScraperController():
     @inject
     def getTruliaListings(trulia_house_listing_service: TruliaHouseListingService):
         truliaData = trulia_house_listing_service.fetchListingsData()
-        return ResponseBuilder.buildSuccessResponse(truliaData, 'Scrape successful!')
+        return ResponseBuilder.buildSuccessResponse(truliaData, 'Successfully fetched for-sale properties!')
     
     @truliaScraperBp.route('/get-rentals', methods=['GET'])
     @token_required
     @inject
     def getTruliaRentals(trulia_house_listing_service: TruliaHouseListingService):
         truliaData = trulia_house_listing_service.fetchRentalData()
-        return ResponseBuilder.buildSuccessResponse(truliaData, 'Scrape successful!')
+        return ResponseBuilder.buildSuccessResponse(truliaData, 'Successfully fetched rental properties!')
+    
+    @truliaScraperBp.route('/get-sold', methods=['GET'])
+    @token_required
+    @inject
+    def getTruliaSold(trulia_house_listing_service: TruliaHouseListingService):
+        truliaData = trulia_house_listing_service.fetchSoldData()
+        return ResponseBuilder.buildSuccessResponse(truliaData, 'Successfully fetched sold properties!')
     

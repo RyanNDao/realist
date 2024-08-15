@@ -9,10 +9,11 @@ interface DataContainerProps{
     isFetching: boolean,
     rentalData?: ApiTruliaListingResponse[],
     listingsData?: ApiTruliaListingResponse[],
+    soldData?: ApiTruliaListingResponse[],
 }
 
 
-export function DataContainer({isFetching, rentalData, listingsData}: DataContainerProps) {
+export function DataContainer({isFetching, rentalData, listingsData, soldData}: DataContainerProps) {
     
     const [tableDataType, setTableDataType ] = useState<"listings" | "rentals" | "sold">("listings");
     const [isDataModalOpen, setIsDataModalOpen] = useState(true);
@@ -70,7 +71,11 @@ export function DataContainer({isFetching, rentalData, listingsData}: DataContai
                 />
             }
             { tableDataType === "sold" &&
-                <div>Coming soon</div>
+                <TruliaDataTable
+                    isFetching={isFetching}
+                    onListingClick={onTableListingClick}
+                    listings={soldData}
+                />
             }
         </Flex>
     )

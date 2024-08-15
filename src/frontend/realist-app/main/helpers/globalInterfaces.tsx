@@ -81,6 +81,7 @@ export interface TruliaListingSummary{
     propertyType: string | null;
     yearBuilt: number | null;
     dateListedOrSold: string | null;
+    dateScraped: string;
     description: string | null;
 }
 

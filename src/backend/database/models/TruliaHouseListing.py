@@ -17,6 +17,8 @@ class TruliaHouseListing:
     city: str = ModelAttribute(str, optional=True)
     state: str = ModelAttribute(str, optional=True)
     zip: str = ModelAttribute(str, optional=False)
+    latitude: float = ModelAttribute(float, optional=False)
+    longitude: float = ModelAttribute(float, optional=False)
     asking_price: int = ModelAttribute(int, optional=False)
     trulia_url: str = ModelAttribute(str, optional=False)
     floor_sqft: int = ModelAttribute(int, optional=True)

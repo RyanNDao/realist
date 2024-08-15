@@ -76,14 +76,7 @@ class PayloadGenerator_DetailedHouseScraper():
 
         queryParts = "\n".join([
         f"""
-        homeDetailsByUrl{i+1}: homeDetailsByUrl(url: $url{i+1}) {{
-            url
-            ...HomeDetailsDescriptionFragment
-            ...HomeDetailsListingProviderFragment
-            ...HomeDetailsFeaturesFragment
-            ...HomeDetailsPriceHistoryFragment
-            ...HomeDetailsNeighborhoodOverviewFragment
-        }}""" for i in range(len(urls))
+        h{i+1}: homeDetailsByUrl(url: $url{i+1}) {{ ...H }}""" for i in range(len(urls))
         ])
         
         return constants.GRAPHQL_DETAILED_SCRAPE_QUERY_TEMPLATE.format(params=params, queryParts=queryParts).replace('\n', '').replace('\t','    ')

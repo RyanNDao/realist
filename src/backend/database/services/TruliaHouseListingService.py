@@ -27,6 +27,8 @@ class TruliaHouseListingService():
             homeDictDataCopy['floor_sqft'] = int(re.search(r'(\d+)', homeDictDataCopy['floor_sqft']).group(0)) if isinstance(homeDictDataCopy.get('floor_sqft'), str) else homeDictDataCopy['floor_sqft']
         if homeDictDataCopy.get('lot_sqft'):
             homeDictDataCopy['lot_sqft'] = int(re.search(r'(\d+)', homeDictDataCopy['lot_sqft']).group(0)) if isinstance(homeDictDataCopy.get('lot_sqft'), str) else homeDictDataCopy['lot_sqft']
+        if homeDictDataCopy.get('date_scraped'):
+            homeDictDataCopy['date_scraped'] = datetime.strptime(homeDictDataCopy['date_scraped'], '%Y-%m-%d')
         if homeDictDataCopy.get('date_listed_or_sold'):
             homeDictDataCopy['date_listed_or_sold'] = datetime.strptime(homeDictDataCopy['date_listed_or_sold'], '%Y-%m-%d')
         if homeDictDataCopy.get('year_built'):
@@ -60,10 +62,11 @@ class TruliaHouseListingService():
 
     def insertNormalizedDataIntoDb(self, truliaNormalizedDataList: list[TruliaHouseListing], searchType: str):
         if searchType.upper() == 'FOR_SALE':
-            existingData = self._truliaHouseListingDAO.getAllListings()
-
+            existingData = self.fetchListingsData()
         elif searchType.upper() == 'FOR_RENT':
-            existingData = self._truliaHouseListingDAO.getAllRentals()
+            existingData = self.fetchListingsData()
+        elif searchType.upper() == 'SOLD':
+            existingData = self.fetchSoldData()
         else:
             raise ValueError(f'Invalid search type: {searchType.upper()}')
         dataIndex = {entry['key']: entry for entry in existingData}
@@ -78,9 +81,11 @@ class TruliaHouseListingService():
         self._truliaHouseListingDAO.updateMultipleListingsInTable(scrapedDataToUpdate)
 
 
-
     def fetchListingsData(self):
         return self._truliaHouseListingDAO.getAllListings()
     
     def fetchRentalData(self):
         return self._truliaHouseListingDAO.getAllRentals()
+    
+    def fetchSoldData(self):
+        return self._truliaHouseListingDAO.getAllSold()

@@ -13,6 +13,8 @@ export function MainContent({tabIndex}) {
     );
     const [rentalData, setRentalData] = useState<ApiTruliaListingResponse[] | undefined>(undefined);
     const [listingsData, setListingsData] = useState<ApiTruliaListingResponse[] | undefined>(undefined);
+    const [soldData, setSoldData] = useState<ApiTruliaListingResponse[] | undefined>(undefined);
+    
     const [isFetching, setIsFetching] = useState(false);
 
     async function getListingsFromDatabase(){
@@ -24,26 +26,32 @@ export function MainContent({tabIndex}) {
         return await makeRequest('api/trulia/get-rentals', 'GET');
     }
 
+    async function getSoldPropertiesFromDatabase(){
+        return await makeRequest('api/trulia/get-sold', 'GET');
+    }
+
     useEffect(()=>{
         async function fetchData() {
             console.log('Fetching data....')
             try {
                 setIsFetching(true);
-                const [listingsResponse, rentalResponse] = await Promise.all(
+                const [listingsResponse, rentalResponse, soldResponse] = await Promise.all(
                     [
                         getListingsFromDatabase(), 
-                        getRentalsFromDatabase()
+                        getRentalsFromDatabase(),
+                        getSoldPropertiesFromDatabase()
                     ]
                 )
                 setListingsData(listingsResponse.data)
                 setRentalData(rentalResponse.data)
+                setSoldData(soldResponse.data)
             } catch {
 
             } finally {
                 setIsFetching(false)
             }
 
-            console.log('Rental/listings data has been fetched!')
+            console.log('Rental/listings/sold data has been fetched!')
         }
         console.log('Scraper container component built')
         if (user){
@@ -77,6 +85,7 @@ export function MainContent({tabIndex}) {
                             isFetching={isFetching}
                             rentalData={rentalData}
                             listingsData={listingsData}
+                            soldData={soldData}
                         />
                     </TabPanel>
                 }

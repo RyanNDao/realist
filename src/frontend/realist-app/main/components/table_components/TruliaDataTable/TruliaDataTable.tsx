@@ -28,6 +28,7 @@ export function TruliaDataTable ({isFetching, onListingClick, listings}: TruliaD
         { headerName: "Property Type", field: "propertyType" },
         { headerName: "Year Built", field: "yearBuilt" },
         { headerName: "Date Listed/Sold", field: "dateListedOrSold" },
+        { headerName: "Date Scraped", field: "dateScraped" },
         { headerName: "Description", field: "description"},
     ]
 
@@ -113,6 +114,7 @@ export function TruliaDataTable ({isFetching, onListingClick, listings}: TruliaD
             propertyType: listing.propertyType,
             yearBuilt: listing.yearBuilt,
             dateListedOrSold: listing.dateListedOrSold,
+            dateScraped: listing.dateScraped,
             description: listing.description
         }
         return listingSummary;
@@ -129,14 +131,14 @@ export function TruliaDataTable ({isFetching, onListingClick, listings}: TruliaD
                             columnDefs={columnsData}
                             rowData={rowsData}
                             pagination={true}
-                            paginationPageSize={200}
-                            paginationPageSizeSelector={[50, 200, 500, 1000]}
+                            paginationPageSize={500}
+                            paginationPageSizeSelector={[100, 200, 500, 1000]}
                             onRowClicked={(e) => {onListingClick(e, fullRowsData)}}
                         />
                     </Box>
                     : <Box flex="1" alignSelf="center" justifySelf="center">
                         <Box as="i" className="fa fa-refresh fa-spin fa-10x"/>
-                        <Text fontSize="3xl" marginTop="20px">Fetching all data... this may take up to a minute</Text>
+                        <Text fontSize="3xl" marginTop="20px">Fetching all data... if page is not loaded in 30 seconds, please reload</Text>
                     </Box>       
             }
         </Flex>

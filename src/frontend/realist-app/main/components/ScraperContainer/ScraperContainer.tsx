@@ -21,7 +21,15 @@ export function ScraperContainer() {
         setIsFetching(true);
         try {
             await makeRequest('/api/trulia/scrape?searchType=FOR_RENT&limit=100', 'GET');
-            
+        } finally {
+            setIsFetching(false);
+        }
+    }
+
+    async function scrapeSold(){
+        setIsFetching(true);
+        try {
+            await makeRequest('/api/trulia/scrape?searchType=SOLD&limit=100&type=LAST_SALE_DATE', 'GET');
         } finally {
             setIsFetching(false);
         }
@@ -32,6 +40,7 @@ export function ScraperContainer() {
             <Center>
                 <Button isDisabled={isFetching} onClick={scrapeListings}>Scrape Listings</Button>
                 <Button isDisabled={isFetching} onClick={scrapeRentals}>Scrape Rentals</Button>
+                <Button isDisabled={isFetching} onClick={scrapeSold}>Scrape Sold</Button>
             </Center>
         </Flex>
     )

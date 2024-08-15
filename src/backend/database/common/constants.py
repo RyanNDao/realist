@@ -7,6 +7,8 @@ TRULIA_MAIN_TABLE_COLUMNS = {
     'city': {'setToNullOnNonUpdate': False},
     'state': {'setToNullOnNonUpdate': False},
     'zip': {'setToNullOnNonUpdate': False},
+    'latitude': {'setToNullOnNonUpdate': False},
+    'longitude': {'setToNullOnNonUpdate': False},
     'asking_price': {'setToNullOnNonUpdate': False},
     'trulia_url': {'setToNullOnNonUpdate': False},
     'floor_sqft': {'setToNullOnNonUpdate': False},
