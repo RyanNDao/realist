@@ -19,6 +19,12 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       }
+    },
+    fs: {
+      allow: [
+        '.',
+        path.resolve(__dirname, '../../node_modules/leaflet/dist')
+      ]
     }
   },
   

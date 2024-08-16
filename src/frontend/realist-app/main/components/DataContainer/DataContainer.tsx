@@ -1,9 +1,10 @@
-import { Flex, Select } from "@chakra-ui/react";
+import { Box, Button, Flex, Select } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { TruliaDataTable } from "../table_components/TruliaDataTable/TruliaDataTable";
 import { ApiTruliaListingResponse, TruliaListingFull, TruliaListingSummary } from "../../helpers/globalInterfaces";
 import { TruliaDataModal } from "../TruliaDataModal/TruliaDataModal";
 import { RowClickedEvent } from "ag-grid-community"
+import { TruliaHouseMap } from "../map_components/TruliaHouseMap/TruliaHouseMap";
 
 interface DataContainerProps{
     isFetching: boolean,
@@ -18,7 +19,7 @@ export function DataContainer({isFetching, rentalData, listingsData, soldData}: 
     const [tableDataType, setTableDataType ] = useState<"listings" | "rentals" | "sold">("listings");
     const [isDataModalOpen, setIsDataModalOpen] = useState(true);
     const [activeListing, setActiveListing] = useState<TruliaListingFull | undefined>(undefined)
-
+    const [activeView, setActiveView] = useState<'table' | 'map'>('table')
     
 
     const onTableListingClick = (e: RowClickedEvent, fullListingsData: TruliaListingFull[]) => {
@@ -40,15 +41,22 @@ export function DataContainer({isFetching, rentalData, listingsData, soldData}: 
 
     
     
+    
     return (
         <Flex flexDirection="column" height="100%" justifyContent="space-between" gap="10px">
             {!isFetching &&
-                <Select width="60%" value={tableDataType} onChange={onSelectTableDataTypeChange}>
-                    <option value='listings'>For Sale</option>
-                    <option value='rentals'>For Rent</option>
-                    <option value='sold'>Sold</option>
-                </Select>
+                <Flex gap="10px">
+                    <Select width="60%" value={tableDataType} onChange={onSelectTableDataTypeChange}>
+                        <option value='listings'>For Sale</option>
+                        <option value='rentals'>For Rent</option>
+                        <option value='sold'>Sold</option>
+                    </Select>
+                    <Button onClick={() => {setActiveView(activeView==='table' ? 'map' : 'table')}}>
+                        {`Toggle ${activeView==='table' ? 'Map' : 'Table'} View`}
+                    </Button>
+                </Flex>
             }
+
             {activeListing &&
                 <TruliaDataModal
                     isOpen={isDataModalOpen}
@@ -56,27 +64,43 @@ export function DataContainer({isFetching, rentalData, listingsData, soldData}: 
                     activeListing={activeListing}
                 />
             }
-            { tableDataType === "listings" &&
-                <TruliaDataTable
-                    isFetching={isFetching}
-                    onListingClick={onTableListingClick}
-                    listings={listingsData}
+
+            {activeView==='table' && 
+                <>
+                    { tableDataType === "listings" &&
+                        <TruliaDataTable
+                            isFetching={isFetching}
+                            onListingClick={onTableListingClick}
+                            listings={listingsData}
+                        />
+                    }
+                    { tableDataType === "rentals" &&
+                        <TruliaDataTable
+                            isFetching={isFetching}
+                            onListingClick={onTableListingClick}
+                            listings={rentalData}
+                        />
+                    }
+                    { tableDataType === "sold" &&
+                        <TruliaDataTable
+                            isFetching={isFetching}
+                            onListingClick={onTableListingClick}
+                            listings={soldData}
+                        />
+                    }
+                </>
+            }
+            
+            {activeView==='map' && 
+                <TruliaHouseMap
+                    forSale={listingsData}
+                    forRent={rentalData}
+                    sold={soldData}
+                    setActiveListing={setActiveListing}
+                    setIsDataModalOpen={setIsDataModalOpen}
                 />
             }
-            { tableDataType === "rentals" &&
-                <TruliaDataTable
-                    isFetching={isFetching}
-                    onListingClick={onTableListingClick}
-                    listings={rentalData}
-                />
-            }
-            { tableDataType === "sold" &&
-                <TruliaDataTable
-                    isFetching={isFetching}
-                    onListingClick={onTableListingClick}
-                    listings={soldData}
-                />
-            }
+            
         </Flex>
     )
 }

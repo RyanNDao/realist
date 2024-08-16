@@ -21,7 +21,7 @@ TRULIA_HEADERS = {
 SEARCH_TYPES = [
     "FOR_SALE",
     "FOR_RENT",
-    # "SOLD",
+    "SOLD",
 ]
 
 TRULIA_INVALID_ADDRESS_NAMES = [
