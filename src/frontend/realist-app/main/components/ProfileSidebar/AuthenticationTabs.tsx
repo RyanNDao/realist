@@ -45,7 +45,6 @@ export function AuthenticationTabs ({onChange, onUserFormButtonClick, onClose, t
                             loginInputData={profileFormData as LoginInputData} 
                             updateData={setProfileFormData}
                         />
-                        {JSON.stringify(profileFormData)}
                         {message && <MessageBox message={message} success={success} failure={failure}></MessageBox>}
                     </TabPanel>
                 </TabPanels>

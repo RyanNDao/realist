@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import uuid
 from backend.database.common.DatabaseConnectionPool import DatabaseConnectionPool
 from backend.database.common.constants import TRULIA_MAIN_TABLE_NAME, TRULIA_MAIN_TABLE_VALUES, TRULIA_MAIN_TABLE_COLUMNS
 import logging
@@ -14,6 +15,7 @@ class TruliaHouseListingDAO():
         self.connectionPool = connectionPool
         self.disableAutoCommit = disableAutoCommit
 
+    #TODO: Combine all these three functions 
     def getAllListings(self, tableName=TRULIA_MAIN_TABLE_NAME) -> list:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
             cursor.execute(f"SELECT * FROM {tableName} WHERE listing_status = 'For Sale'")
@@ -25,10 +27,18 @@ class TruliaHouseListingDAO():
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
             cursor.execute(f"SELECT * FROM {tableName} WHERE listing_status = 'For Rent'")
             rows = cursor.fetchall()
-            CommonLogger.LOGGER.info(f'getAllListings returned {len(rows)} total results')
+            CommonLogger.LOGGER.info(f'getAllRentals returned {len(rows)} total results')
+            return rows
+        
+    def getAllSold(self, tableName=TRULIA_MAIN_TABLE_NAME) -> list:
+        with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
+            cursor.execute(f"SELECT * FROM {tableName} WHERE listing_status = 'Sold'")
+            rows = cursor.fetchall()
+            CommonLogger.LOGGER.info(f'getAllSold returned {len(rows)} total results')
             return rows
         
     def insertListingIntoTable(self, truliaHouseListing: TruliaHouseListing, columns=TRULIA_MAIN_TABLE_VALUES, tableName=TRULIA_MAIN_TABLE_NAME) -> None:
+        # this shouldn't be used, even with one entry. Use the insert multiple instead.
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
             if not isinstance(truliaHouseListing, TruliaHouseListing):
                 raise AttributeError(f'truliaHouseListing is of type {type(truliaHouseListing)}, when it should be a TruliaHouseListing type!')
@@ -39,8 +49,22 @@ class TruliaHouseListingDAO():
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:
             if not all([isinstance(entry, TruliaHouseListing) for entry in truliaHouseListingList]):
                 raise AttributeError(f'All entries must be of TruliaHouseListing type when trying to insert multiple listings into DB table {tableName}')
-            cursor.executemany(f'INSERT INTO {tableName} {columns};', [entry.dict for entry in truliaHouseListingList])
-            CommonLogger.LOGGER.warning(f'Total inserted rows: {cursor.rowcount}')
+            tempTable = f'{tableName}_temp_{uuid.uuid4().hex}'
+            try:
+                cursor.execute(f"CREATE TABLE {tempTable} (LIKE {tableName} INCLUDING ALL)") # create empty temp table
+                cursor.executemany(f'INSERT INTO {tempTable} {columns};', [entry.dict for entry in truliaHouseListingList])
+                cursor.execute(f'INSERT INTO {tableName} {columns.split(" VALUES ")[0]} SELECT {columns.split(" VALUES ")[0][1:-1]} FROM {tempTable} ON CONFLICT DO NOTHING')
+                successfulEntries = cursor.rowcount
+                cursor.execute(f'SELECT * FROM {tempTable} EXCEPT SELECT * FROM {tableName}') # get differences in tables
+                failedEntries = cursor.fetchall()
+                for entry in failedEntries:
+                    CommonLogger.LOGGER.warning(f'Listing {entry} was not inserted due to a conflict.')
+                CommonLogger.LOGGER.warning(f'Total inserted rows: {successfulEntries}') 
+            except Exception as e:
+                cursor.execute("ROLLBACK;")
+                CommonLogger.LOGGER.error(f'An error has occurred while inserting multiple listings into {tableName}: {e}')
+            finally:
+                cursor.execute(f"DROP TABLE IF EXISTS {tempTable};")
 
     def getListingByKey(self, keyValue: str, keyName='key', tableName=TRULIA_MAIN_TABLE_NAME) -> dict:
         with self.connectionPool.managed_connection_cursor(self.disableAutoCommit) as cursor:

@@ -115,6 +115,8 @@ class DataParser_HouseScan(DataParser):
             if address.lower() in TRULIA_INVALID_ADDRESS_NAMES:
                 raise DataParsingError(f'Listing address "{address} is invalid!')
             extractedPrimaryData['address'] = address
+            extractedPrimaryData['latitude'] = homeData['location']['coordinates']['latitude']
+            extractedPrimaryData['longitude'] = homeData['location']['coordinates']['longitude']
             extractedPrimaryData['asking_price'] = int(homeData['price']['formattedPrice'].replace('$', '').replace(',', '').replace('/mo',''))
             extractedPrimaryData['url'] = homeData['url']
             extractedPrimaryData['trulia_url'] = 'trulia.com' + homeData['url']

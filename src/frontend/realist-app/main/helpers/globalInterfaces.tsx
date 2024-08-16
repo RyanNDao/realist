@@ -27,8 +27,10 @@ export interface ApiTruliaListingResponse {
     foundation: string | null;
     house_material: string | null;
     key: string;
+    latitude: number | null;
     listing_status: string | null;
     location: string | null;
+    longitude: number | null;
     lot_sqft: number | null;
     mls_listing_id: string | null;
     neighborhood: string | null; 
@@ -81,6 +83,7 @@ export interface TruliaListingSummary{
     propertyType: string | null;
     yearBuilt: number | null;
     dateListedOrSold: string | null;
+    dateScraped: string;
     description: string | null;
 }
 
@@ -107,6 +110,8 @@ export interface TruliaListingFull{
     houseMaterial: string | null;
     structureType: string | null;
     lotSqft: number | null;
+    latitude: number | null;
+    longitude: number | null;
     parking: string | null;
     trulia_url: string | null;
     priceHistory: PriceHistory[] | null;

@@ -21,7 +21,7 @@ TRULIA_HEADERS = {
 SEARCH_TYPES = [
     "FOR_SALE",
     "FOR_RENT",
-    # "SOLD",
+    "SOLD",
 ]
 
 TRULIA_INVALID_ADDRESS_NAMES = [
@@ -659,6 +659,15 @@ GRAPHQL_DETAILED_SCRAPE_QUERY_TEMPLATE = """
     query WEB_homeDetailsClientTopThirdLookUp({params}) {{
         {queryParts}
     }}
+    
+    fragment H on HOME_Details {{
+		url
+		...HomeDetailsDescriptionFragment
+		...HomeDetailsListingProviderFragment
+		...HomeDetailsFeaturesFragment
+		...HomeDetailsPriceHistoryFragment
+        ...HomeDetailsNeighborhoodOverviewFragment
+	}}
 
     fragment HomeDetailsDescriptionFragment on HOME_Details {{
         __typename
