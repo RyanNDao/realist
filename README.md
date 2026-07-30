@@ -4,7 +4,7 @@
 Realist is a tool designed to assist real estate buyers by analyzing property listings. It scrapes real estate listing websites for home data and sends the data into a database to be stored. In the future, the tool will provide insights that help users make informed purchasing decisions.
 
 ## Website
-Realist is hosted on the web at https://tryrealist.com
+~~Realist is hosted on the web at https://tryrealist.com~~
 
 To log in:
 ```
